@@ -1,0 +1,14 @@
+{
+  "name": "InterfaceWorks-RBX",
+  "tree": {
+
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "InterfaceWorks": {
+        "$path": "DarkluaOutput"
+      }
+    }
+  }
+}
