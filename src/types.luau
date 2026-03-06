@@ -1,11 +1,19 @@
 local Types = {}
 
-export type InterfaceWorksType = string
+export type InterfaceWorksType = "Object" | "Property"
 
 export type InterfaceWorksBase = {
 
 	Insert: (self: any, any, any) -> (),
+	GetChildren: () -> { InterfaceWorksBase },
+	GetTreeRoot: () -> InterfaceWorksBase,
 	Host: any,
+}
+
+export type InterfaceWorksRoot = {
+
+	Attach: (Composition: _InterfaceWorksComposition, ID: string?) -> (),
+	DestroyStroke: (ID: string | "Main") -> (),
 }
 
 export type InterfaceWorksObject = {
@@ -14,6 +22,8 @@ export type InterfaceWorksObject = {
 	Insert: (self: any, any, any) -> (),
 	Destroy: (self: any) -> (),
 	Workers: { InterfaceWorksWorker },
+	GetChildren: () -> { InterfaceWorksBase },
+	GetTreeRoot: () -> InterfaceWorksBase,
 }
 
 export type InterfaceWorksElement = {
@@ -28,9 +38,17 @@ export type InterfaceWorksElement = {
 export type InterfaceWorksWorker = {
 
 	Disconnect: (self: InterfaceWorksWorker) -> nil,
+	SelfProcesses: { RBXScriptConnection | (any) -> any },
+	ChildProcesses: { InterfaceWorksWorker },
 }
 
 export type _InterfaceWorksComposition = () -> InterfaceWorksElement
+
+export type _InterfaceWorksComposerState = {
+
+	Composition: _InterfaceWorksComposition,
+	Finished: boolean,
+}
 
 export type InterfaceWorksValue = {
 
@@ -52,6 +70,8 @@ export type InterfaceWorksStroke = {
 	Host: Frame,
 	GetCurrentValue: () -> InterfaceWorksValue,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
+	GetChildren: () -> { InterfaceWorksBase },
+	GetTreeRoot: () -> InterfaceWorksBase,
 }
 
 return Types

@@ -12,6 +12,7 @@ InterfaceWorks.Trees = {}
 InterfaceWorks.Value = Value
 InterfaceWorks.InputTypes = InputTypes
 InterfaceWorks.Property = Property
+InterfaceWorks.Types = types
 
 function InterfaceWorks.GetRoot(RID: string)
 	return InterfaceWorks.Trees[RID]

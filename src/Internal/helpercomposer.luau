@@ -4,6 +4,7 @@ type InterfaceWorksObject = types.InterfaceWorksObject
 type InterfaceWorksBase = types.InterfaceWorksBase
 
 local Object = require("@BaseObject/Object")
+local InputTypesEnums = require("@Root/Forward/InputTypesEnums")
 local InputTypes = require("./InputTypes")
 
 local helper = {}
@@ -46,26 +47,48 @@ function helper.Retrace(
 	CurrentElements: { [number | string]: InterfaceWorksElement },
 	LegacyElements: { [number | string]: InterfaceWorksElement }
 )
+	for childname, legacychild: InterfaceWorksElement in pairs(LegacyElements or {}) do
+		local currentchild = CurrentElements[childname]
+		local legacyObject = Base[childname]
+
+		if not currentchild then
+			if legacyObject then
+				legacyObject:Destroy()
+			end
+		end
+	end
 	for childname: number | string, currentchild: InterfaceWorksElement in pairs(CurrentElements or {}) do --Make this handle more destroying stuff cuz rn if all children of newelement are destroyed nothing happens
 		local legacychild: InterfaceWorksElement? = LegacyElements[childname]
-		local Object: InterfaceWorksObject = Base[childname]
+		local currentObject: InterfaceWorksObject = Base[childname]
 
-		if not legacychild then
-			if currentchild.Type == "Object" then
-				Object:Destroy()
-			end
-
+		if not currentObject then
+			helper.Build(Base, { [childname] = currentchild })
 			continue
 		end
 
-		for propname, propdata in pairs(currentchild.Ps) do
+		if not legacychild then
+			continue
+		end
+
+		--Set all properties
+
+		for propname, propdata in pairs(currentchild.Ps or {}) do
 			if legacychild[propname] ~= propdata then
-				Object.Host[propname] = propdata
+				currentObject.Host[propname] = propdata
 			end
 		end
 
+		--Retrace function event
+
+		local Retrace = currentchild.Fs and currentchild.Fs[InputTypesEnums.Render]
+		if Retrace then
+			InputTypes[InputTypesEnums.Render](currentObject, Retrace)
+		end
+
+		--Continue children
+
 		if currentchild.Cn and legacychild.Cn then
-			helper.Retrace(Object, currentchild.Cn, legacychild.Cn)
+			helper.Retrace(currentObject, currentchild.Cn, legacychild.Cn)
 		end
 	end
 end

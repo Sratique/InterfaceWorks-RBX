@@ -10,7 +10,7 @@ Value.Globals = {}
 function Value.NewGlobal() end
 
 function Value.New(default: any): InterfaceWorksValue
-	local Exists: InterfaceWorksValue? = composer.ScheduledValue()
+	local Exists: InterfaceWorksValue? = composer.NextValue()
 
 	if Exists then
 		return Exists
@@ -18,7 +18,7 @@ function Value.New(default: any): InterfaceWorksValue
 
 	local Value: InterfaceWorksValue = ValueClass.New(default)
 
-	composer.ScheduleValue(Value)
+	composer.IndexValue(Value)
 
 	return Value
 end
