@@ -11,7 +11,6 @@ function Stroke.New(Composition: () -> any): InterfaceWorksStroke
 	local VirtualHost = Instance.new("Frame")
 	VirtualHost.Size = UDim2.fromScale(1, 1)
 	VirtualHost.BackgroundTransparency = 1
-	VirtualHost.BorderSizePixel = 0
 
 	local NewBaseObject = BaseObject.New(VirtualHost)
 
