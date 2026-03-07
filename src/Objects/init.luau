@@ -24,12 +24,17 @@ function BaseObject:GetTreeRoot()
 	return self[RootProperties].TreeRoot
 end
 
+function BaseObject:_Remove(index: number | string)
+	self[index] = nil
+end
+
 function BaseObject:Insert(Object, ID: string?)
 	table.insert(self[RootProperties].Children, Object)
 	Object[RootProperties].TreeRoot = if self[RootProperties].TreeRoot == nil
 		then self
 		else self[RootProperties].TreeRoot
 	Object.Parent = self
+	Object.Name = ID
 	if ID then
 		self[ID] = Object
 	else

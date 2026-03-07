@@ -19,18 +19,19 @@ end
 
 function Object:Destroy()
 	self.Host:Destroy()
+	self.Host = nil
 	for _, v in pairs(self:GetChildren()) do
 		v:Destroy()
 	end
-
 	for _, v: InterfaceWorksWorker in pairs(self.Workers) do
 		v:Disconnect()
 	end
 
-	self.Host = nil
-	setmetatable(self, nil)
+	self.Parent:_Remove(self.Name)
 
+	setmetatable(self, nil)
 	table.clear(self)
+	self = nil
 end
 
 return Object

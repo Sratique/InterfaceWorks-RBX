@@ -57,23 +57,21 @@ function helper.Retrace(
 			end
 		end
 	end
-	for childname: number | string, currentchild: InterfaceWorksElement in pairs(CurrentElements or {}) do --Make this handle more destroying stuff cuz rn if all children of newelement are destroyed nothing happens
+	for childname: number | string, currentchild: InterfaceWorksElement in pairs(CurrentElements or {}) do
 		local legacychild: InterfaceWorksElement? = LegacyElements[childname]
 		local currentObject: InterfaceWorksObject = Base[childname]
 
-		if not currentObject then
-			helper.Build(Base, { [childname] = currentchild })
-			continue
-		end
-
 		if not legacychild then
+			if not currentObject then
+				helper.Build(Base, { [childname] = currentchild })
+			end
 			continue
 		end
 
 		--Set all properties
 
 		for propname, propdata in pairs(currentchild.Ps or {}) do
-			if legacychild[propname] ~= propdata then
+			if legacychild.Ps[propname] ~= propdata then
 				currentObject.Host[propname] = propdata
 			end
 		end

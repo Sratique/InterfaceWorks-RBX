@@ -44,12 +44,6 @@ export type InterfaceWorksWorker = {
 
 export type _InterfaceWorksComposition = () -> InterfaceWorksElement
 
-export type _InterfaceWorksComposerState = {
-
-	Composition: _InterfaceWorksComposition,
-	Finished: boolean,
-}
-
 export type InterfaceWorksValue = {
 
 	Value: any,
@@ -72,6 +66,7 @@ export type InterfaceWorksStroke = {
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
 	GetChildren: () -> { InterfaceWorksBase },
 	GetTreeRoot: () -> InterfaceWorksBase,
+	CurrentPosition: number,
 }
 
 return Types
