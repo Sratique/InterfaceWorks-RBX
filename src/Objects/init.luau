@@ -16,6 +16,11 @@ function BaseObject.New(SourceInstance: Instance?)
 	return NewBaseObject
 end
 
+function BaseObject:IsA(ClassName: string)
+	return ClassName == (self[RootProperties].ClassName or "BaseObject")
+		or self[RootProperties].Inheritance and table.find(self[RootProperties].Inheritance, ClassName) ~= nil
+end
+
 function BaseObject:GetChildren()
 	return self[RootProperties].Children
 end

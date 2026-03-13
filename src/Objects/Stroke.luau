@@ -17,7 +17,6 @@ function Stroke.New(Composition: () -> any): InterfaceWorksStroke
 	local NewStroke = setmetatable(NewBaseObject, Stroke)
 
 	NewStroke.Values = {}
-	NewStroke.Functions = {}
 	NewStroke.CurrentPosition = 0
 
 	NewStroke.RetracingComposition = Composition
@@ -42,14 +41,18 @@ function Stroke:ResetPosition()
 	self.CurrentPosition = 0
 end
 
-function Stroke:Dismantle()
+function Stroke:UnMount()
+	if self.LastParent then
+		return
+	end
+
 	self.LastParent = self.Host.Parent
 	self.Host.Parent = nil
 
 	--Do other stuff for state clean up
 end
 
-function Stroke:Rebuild()
+function Stroke:ReMount()
 	if not self.LastParent then
 		return
 	end

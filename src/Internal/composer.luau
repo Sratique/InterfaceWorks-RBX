@@ -3,9 +3,13 @@ type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksValue = types.InterfaceWorksValue
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksObject = types.InterfaceWorksObject
+type InterfaceWorksBase = types.InterfaceWorksBase
 
 local Stroke = require("@BaseObject/Stroke")
-local helper = require("./helpercomposer")
+local Object = require("@BaseObject/Object")
+local InputTypesEnums = require("@Root/Forward/InputTypesEnums")
+local InputTypes = require("./InputTypes")
 
 local composer = {}
 composer.Compositions = {}
@@ -73,23 +77,48 @@ function composer.IndexValue(ValueObject: InterfaceWorksValue)
 	composer.CurrentComposition:InsertValue(ValueObject)
 end
 
-function composer.ReCompose(Stroke: InterfaceWorksStroke)
-	if composer.CurrentComposition then
-		ScheduleRender(Stroke, nil, 1, "ReCompose")
+--			Main functions
 
-		return
+function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | number]: InterfaceWorksElement })
+	for ElementName: number | string, Element: InterfaceWorksElement in pairs(Elements) do
+		if Element.Type == "Fragment" then
+			if not Element.Composition then
+				continue
+			end
+			composer.Compose(Element.Composition, function(NewFragment: InterfaceWorksStroke)
+				SourceObject:Insert(Stroke, Element.FragmentName)
+			end, 100)
+		else
+			local Host: any = Instance.new(Element.ID)
+			Host.Name = ElementName
+
+			for prop: string, val: any in pairs(Element.Ps or {}) do
+				Host[prop] = val
+			end
+
+			local NewElementObject: InterfaceWorksObject = Object.New(Host)
+
+			for fndata: string, fn: (any) -> any in pairs(Element.Fs or {}) do
+				if InputTypes[fndata] then
+					local Worker = InputTypes[fndata](NewElementObject, fn)
+
+					if Worker then
+						table.insert(NewElementObject.Workers, Worker)
+					end
+					continue
+				end
+				NewElementObject[fndata] = function()
+					fn(NewElementObject)
+				end
+			end
+
+			SourceObject:Insert(NewElementObject, ElementName)
+
+			if Element.Cn then
+				HelperCompose(NewElementObject, Element.Cn)
+			end
+		end
 	end
-	composer.CurrentComposition = Stroke
-
-	Stroke:ResetPosition()
-
-	local NewBuildTable: { InterfaceWorksElement } = Stroke.RetracingComposition()
-
-	helper.Retrace(Stroke, NewBuildTable, Stroke.CurrentComposition)
-	Stroke.CurrentComposition = NewBuildTable
-
-	composer.CurrentComposition = nil
-	NextRender()
 end
 
 function composer.Compose(
@@ -108,7 +137,7 @@ function composer.Compose(
 
 	local BuildTable: { InterfaceWorksElement } = Composition()
 	NewStroke.CurrentComposition = BuildTable
-	helper.Build(NewStroke, BuildTable)
+	HelperCompose(NewStroke, BuildTable)
 
 	composer.CurrentComposition = nil
 
@@ -116,6 +145,80 @@ function composer.Compose(
 		callback(NewStroke)
 	end
 
+	NextRender()
+end
+
+function HelperReCompose(
+	Base: InterfaceWorksBase,
+	CurrentElements: { [number | string]: InterfaceWorksElement },
+	LegacyElements: { [number | string]: InterfaceWorksElement }
+)
+	for childname, legacychild: InterfaceWorksElement in pairs(LegacyElements or {}) do
+		local currentchild = CurrentElements[childname]
+		local legacyObject = Base[childname]
+
+		if not currentchild then
+			if legacyObject then
+				legacyObject:Destroy()
+			end
+		end
+	end
+	for childname: number | string, currentchild: InterfaceWorksElement in pairs(CurrentElements or {}) do
+		local legacychild: InterfaceWorksElement? = LegacyElements[childname]
+		local currentObject: any = Base[childname]
+
+		if currentchild.Type == "Fragment" then
+			if currentObject:IsA("InterfaceWorksStroke") then
+				composer.ReCompose(currentObject)
+			end
+		else
+			if not legacychild then
+				if not currentObject then
+					HelperCompose(Base, { [childname] = currentchild })
+				end
+				continue
+			end
+
+			--Set all properties
+
+			for propname, propdata in pairs(currentchild.Ps or {}) do
+				if legacychild.Ps[propname] ~= propdata then
+					currentObject.Host[propname] = propdata
+				end
+			end
+
+			--Retrace function event
+
+			local Retrace = currentchild.Fs and currentchild.Fs[InputTypesEnums.Render]
+			if Retrace then
+				InputTypes[InputTypesEnums.Render](currentObject, Retrace)
+			end
+
+			--Continue children
+
+			if currentchild.Cn and legacychild.Cn then
+				HelperReCompose(currentObject, currentchild.Cn, legacychild.Cn)
+			end
+		end
+	end
+end
+
+function composer.ReCompose(Stroke: InterfaceWorksStroke)
+	if composer.CurrentComposition then
+		ScheduleRender(Stroke, nil, 1, "ReCompose")
+
+		return
+	end
+	composer.CurrentComposition = Stroke
+
+	Stroke:ResetPosition()
+
+	local NewBuildTable: { InterfaceWorksElement } = Stroke.RetracingComposition()
+
+	HelperReCompose(Stroke, NewBuildTable, Stroke.CurrentComposition)
+	Stroke.CurrentComposition = NewBuildTable
+
+	composer.CurrentComposition = nil
 	NextRender()
 end
 

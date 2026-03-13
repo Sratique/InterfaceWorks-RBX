@@ -11,7 +11,7 @@ InterfaceWorks.Trees = {}
 
 InterfaceWorks.Value = Value
 InterfaceWorks.InputTypes = InputTypes
-InterfaceWorks.Property = Property
+InterfaceWorks.CreateProperty = Property
 InterfaceWorks.Types = types
 
 function InterfaceWorks.GetRoot(RID: string)
@@ -43,13 +43,11 @@ function InterfaceWorks.CreateElement(Classname: string, Properties, Functions, 
 	return Struct
 end
 
-function InterfaceWorks.CreateProperty(Classname: string, Properties, Children): InterfaceWorksElement
+function InterfaceWorks.CreateFragment(Composition: () -> InterfaceWorksElement, FragmentName: string)
 	local Struct = {
-
-		ID = Classname,
-		Ps = Properties,
-		Cn = Children,
-		Type = "Property",
+		Type = "Fragment",
+		Composition = Composition,
+		FragmentName = FragmentName,
 	}
 
 	return Struct

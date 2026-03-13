@@ -7,6 +7,7 @@ export type InterfaceWorksBase = {
 	Insert: (self: any, any, any) -> (),
 	GetChildren: () -> { InterfaceWorksBase },
 	GetTreeRoot: () -> InterfaceWorksBase,
+	IsA: (self: any, ClassName: string) -> boolean,
 	Host: any,
 }
 
@@ -24,6 +25,7 @@ export type InterfaceWorksObject = {
 	Workers: { InterfaceWorksWorker },
 	GetChildren: () -> { InterfaceWorksBase },
 	GetTreeRoot: () -> InterfaceWorksBase,
+	IsA: (self: any, ClassName: string) -> boolean,
 }
 
 export type InterfaceWorksElement = {
@@ -32,7 +34,9 @@ export type InterfaceWorksElement = {
 	Ps: { [string]: any },
 	Fs: { [InterfaceWorksType | string]: (any) -> any }?,
 	Cn: { [string | number]: InterfaceWorksElement }?,
-	Type: "Object" | "Property",
+	Type: "Object" | "Property" | "Fragment",
+	Composition: (() -> InterfaceWorksElement)?,
+	FragmentName: string?,
 }
 
 export type InterfaceWorksWorker = {
@@ -61,12 +65,13 @@ export type InterfaceWorksStroke = {
 	Children: { InterfaceWorksElement },
 	InsertValue: (InterfaceWorksValue) -> (),
 	Insert: (self: InterfaceWorksStroke, any, any) -> (),
-	Host: Frame,
+	Host: GuiObject,
 	GetCurrentValue: () -> InterfaceWorksValue,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
 	GetChildren: () -> { InterfaceWorksBase },
 	GetTreeRoot: () -> InterfaceWorksBase,
 	CurrentPosition: number,
+	IsA: (self: any, ClassName: string) -> boolean,
 }
 
 return Types
