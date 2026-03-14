@@ -1,41 +1,46 @@
+warn("Running InterfaceWorks version: " .. _G.VERSION .. "@" .. _G.CHANNEL)
+
 local types = require("@Root/types")
 type InterfaceWorksElement = types.InterfaceWorksElement
+type InterfaceWorksElementData = types.InterfaceWorksElementData
+type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 
 local Root = require("@BaseObject/Root")
 local InputTypes = require("@Root/Forward/InputTypesEnums")
 local Property = require("@Root/Forward/Property")
+local Materials = require("@Root/Forward/Materials")
 local Value = require("@Root/Forward/ValueController")
 
 local InterfaceWorks = {}
-InterfaceWorks.Trees = {}
 
 InterfaceWorks.Value = Value
 InterfaceWorks.InputTypes = InputTypes
 InterfaceWorks.CreateProperty = Property
 InterfaceWorks.Types = types
+InterfaceWorks.Materials = Materials
 
-function InterfaceWorks.GetRoot(RID: string)
-	return InterfaceWorks.Trees[RID]
-end
-
-function InterfaceWorks.CreateRoot(Container: Instance?, SaveAs: string?)
+function InterfaceWorks.CreateRoot(Container: Instance?)
 	local Base = Container or Instance.new("ScreenGui")
 
 	local NewTreeRoot = Root.New(Base)
 
-	if SaveAs then
-		InterfaceWorks.Trees[SaveAs] = NewTreeRoot
-	end
-
 	return NewTreeRoot
 end
 
-function InterfaceWorks.CreateElement(Classname: string, Properties, Functions, Children): InterfaceWorksElement
+function InterfaceWorks.CreateElement(
+	Classname: string,
+	Data: InterfaceWorksElementData,
+	Children
+): InterfaceWorksElement
+	Data = Data or {}
+	Children = Children or {}
+
 	local Struct = {
 
 		ID = Classname,
-		Ps = Properties,
-		Fs = Functions,
+		Ps = Data.Properties,
+		Fs = Data.Functions,
+		Mt = Data.Material,
 		Cn = Children,
 		Type = "Object",
 	}
@@ -43,8 +48,12 @@ function InterfaceWorks.CreateElement(Classname: string, Properties, Functions, 
 	return Struct
 end
 
-function InterfaceWorks.CreateFragment(Composition: () -> InterfaceWorksElement, FragmentName: string)
+function InterfaceWorks.CreateFragment(
+	Composition: () -> InterfaceWorksElement,
+	FragmentName: string
+): InterfaceWorksElement
 	local Struct = {
+		ID = nil,
 		Type = "Fragment",
 		Composition = Composition,
 		FragmentName = FragmentName,

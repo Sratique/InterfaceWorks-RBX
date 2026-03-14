@@ -19,6 +19,7 @@ end
 
 function Object:Destroy()
 	self.Host:Destroy()
+	self:_Destroy()
 	self.Host = nil
 	for _, v in pairs(self:GetChildren()) do
 		v:Destroy()

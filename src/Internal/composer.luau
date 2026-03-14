@@ -114,6 +114,9 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 
 			SourceObject:Insert(NewElementObject, ElementName)
 
+			if Element.Mt then
+				Element.Mt:AddTarget(NewElementObject)
+			end
 			if Element.Cn then
 				HelperCompose(NewElementObject, Element.Cn)
 			end
@@ -182,7 +185,7 @@ function HelperReCompose(
 			--Set all properties
 
 			for propname, propdata in pairs(currentchild.Ps or {}) do
-				if legacychild.Ps[propname] ~= propdata then
+				if legacychild.Ps and legacychild.Ps[propname] ~= propdata then
 					currentObject.Host[propname] = propdata
 				end
 			end

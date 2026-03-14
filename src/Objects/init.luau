@@ -10,6 +10,7 @@ function BaseObject.New(SourceInstance: Instance?)
 
 	NewBaseObject[RootProperties] = {}
 	NewBaseObject[RootProperties].Children = {}
+	NewBaseObject[RootProperties].Destroying = {}
 
 	NewBaseObject.Host = SourceInstance
 
@@ -31,6 +32,16 @@ end
 
 function BaseObject:_Remove(index: number | string)
 	self[index] = nil
+end
+
+function BaseObject:_Destroy()
+	for _, v: () -> () in pairs(self[RootProperties].Destroying) do
+		v()
+	end
+end
+
+function BaseObject:Destroying(callback: () -> ())
+	table.insert(self[RootProperties].Destroying, callback)
 end
 
 function BaseObject:Insert(Object, ID: string?)

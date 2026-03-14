@@ -10,6 +10,16 @@
     {
       rule: "remove_comments",
       except: ["^--!"]
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "VERSION",
+      value: "0.0.1",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "CHANNEL",
+      value: "Alpha-Channel",
     }
   ]
 }

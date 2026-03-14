@@ -2,6 +2,15 @@ local Types = {}
 
 export type InterfaceWorksType = "Object" | "Property"
 
+export type InterfaceWorksMaterial = {
+
+	Targets: { InterfaceWorksObject },
+	ReactivityWorkers: InterfaceWorksWorker,
+	ReactivityFunction: (InterfaceWorksObject) -> ...RBXScriptConnection,
+	ConstantReactivityWorker: InterfaceWorksWorker,
+	AddTarget: (self: any, InterfaceWorksObject) -> (),
+}
+
 export type InterfaceWorksBase = {
 
 	Insert: (self: any, any, any) -> (),
@@ -26,15 +35,28 @@ export type InterfaceWorksObject = {
 	GetChildren: () -> { InterfaceWorksBase },
 	GetTreeRoot: () -> InterfaceWorksBase,
 	IsA: (self: any, ClassName: string) -> boolean,
+	Destroying: (self: any, callback: () -> ()) -> (),
+}
+
+export type InterfaceWorksElementData = {
+
+	Properties: {
+		[string]: any,
+	}?,
+	Functions: {
+		[InterfaceWorksType | string]: (any) -> any,
+	}?,
+	Material: InterfaceWorksMaterial?,
 }
 
 export type InterfaceWorksElement = {
 
 	ID: string,
-	Ps: { [string]: any },
+	Type: "Object" | "Property" | "Fragment",
+	Ps: { [string]: any }?,
 	Fs: { [InterfaceWorksType | string]: (any) -> any }?,
 	Cn: { [string | number]: InterfaceWorksElement }?,
-	Type: "Object" | "Property" | "Fragment",
+	Mt: InterfaceWorksMaterial?,
 	Composition: (() -> InterfaceWorksElement)?,
 	FragmentName: string?,
 }
