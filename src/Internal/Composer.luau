@@ -11,10 +11,10 @@ local Object = require("@BaseObject/Object")
 local InputTypesEnums = require("@Root/Forward/InputTypesEnums")
 local InputTypes = require("./InputTypes")
 
-local composer = {}
-composer.Compositions = {}
-composer.CurrentComposition = nil
-composer.RenderSchedule = {}
+local Composer = {}
+Composer.Compositions = {}
+Composer.CurrentComposition = nil
+Composer.RenderSchedule = {}
 
 --Local
 
@@ -24,7 +24,7 @@ local function ScheduleRender(
 	Priority: number?,
 	Type: "ReCompose" | "Compose"
 )
-	table.insert(composer.RenderSchedule, {
+	table.insert(Composer.RenderSchedule, {
 
 		Base = Base,
 		Callback = callback,
@@ -34,25 +34,25 @@ local function ScheduleRender(
 end
 
 local function NextRender()
-	if #composer.RenderSchedule == 0 then
+	if #Composer.RenderSchedule == 0 then
 		return
 	end
 	task.spawn(function()
 		local LastMax = 1
 
-		for i, v in pairs(composer.RenderSchedule) do
-			if composer.RenderSchedule[LastMax].Priority < v.Priority then
+		for i, v in pairs(Composer.RenderSchedule) do
+			if Composer.RenderSchedule[LastMax].Priority < v.Priority then
 				LastMax = i
 			end
 		end
 
-		local RenderTicket = composer.RenderSchedule[LastMax]
-		table.remove(composer.RenderSchedule, LastMax)
+		local RenderTicket = Composer.RenderSchedule[LastMax]
+		table.remove(Composer.RenderSchedule, LastMax)
 
 		if RenderTicket.Type == "Compose" then
-			composer.Compose(RenderTicket.Base, RenderTicket.Callback)
+			Composer.Compose(RenderTicket.Base, RenderTicket.Callback)
 		else
-			composer.ReCompose(RenderTicket.Base)
+			Composer.ReCompose(RenderTicket.Base)
 		end
 
 		return
@@ -61,20 +61,20 @@ end
 
 --Forward
 
-function composer.NextValue(): InterfaceWorksValue?
-	return composer.CurrentComposition:GetCurrentValue()
+function Composer.NextValue(): InterfaceWorksValue?
+	return Composer.CurrentComposition:GetCurrentValue()
 end
 
-function composer.IndexValue(ValueObject: InterfaceWorksValue)
-	assert(composer.CurrentComposition, "Unhandled exception: No composer job, but a value has been added.")
+function Composer.IndexValue(ValueObject: InterfaceWorksValue)
+	assert(Composer.CurrentComposition, "Unhandled exception: No Composer job, but a value has been added.")
 
-	local CurrentComposition = composer.CurrentComposition
+	local CurrentComposition = Composer.CurrentComposition
 
 	ValueObject:OnChange(function()
-		composer.ReCompose(CurrentComposition)
+		Composer.ReCompose(CurrentComposition)
 	end)
 
-	composer.CurrentComposition:InsertValue(ValueObject)
+	Composer.CurrentComposition:InsertValue(ValueObject)
 end
 
 --			Main functions
@@ -85,7 +85,7 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 			if not Element.Composition then
 				continue
 			end
-			composer.Compose(Element.Composition, function(NewFragment: InterfaceWorksStroke)
+			Composer.Compose(Element.Composition, function(NewFragment: InterfaceWorksStroke)
 				SourceObject:Insert(Stroke, Element.FragmentName)
 			end, 100)
 		else
@@ -124,25 +124,25 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 	end
 end
 
-function composer.Compose(
+function Composer.Compose(
 	Composition: _InterfaceWorksComposition,
 	callback: (InterfaceWorksStroke) -> ()?,
 	Priority: number?
 ) -- Priority is optional. Higher = faster render
-	if composer.CurrentComposition then
+	if Composer.CurrentComposition then
 		ScheduleRender(Composition, callback, Priority or 99, "Compose")
 
 		return
 	end
 
 	local NewStroke: InterfaceWorksStroke = Stroke.New(Composition)
-	composer.CurrentComposition = NewStroke
+	Composer.CurrentComposition = NewStroke
 
 	local BuildTable: { InterfaceWorksElement } = Composition()
 	NewStroke.CurrentComposition = BuildTable
 	HelperCompose(NewStroke, BuildTable)
 
-	composer.CurrentComposition = nil
+	Composer.CurrentComposition = nil
 
 	if callback then
 		callback(NewStroke)
@@ -172,7 +172,7 @@ function HelperReCompose(
 
 		if currentchild.Type == "Fragment" then
 			if currentObject:IsA("InterfaceWorksStroke") then
-				composer.ReCompose(currentObject)
+				Composer.ReCompose(currentObject)
 			end
 		else
 			if not legacychild then
@@ -206,13 +206,13 @@ function HelperReCompose(
 	end
 end
 
-function composer.ReCompose(Stroke: InterfaceWorksStroke)
-	if composer.CurrentComposition then
+function Composer.ReCompose(Stroke: InterfaceWorksStroke)
+	if Composer.CurrentComposition then
 		ScheduleRender(Stroke, nil, 1, "ReCompose")
 
 		return
 	end
-	composer.CurrentComposition = Stroke
+	Composer.CurrentComposition = Stroke
 
 	Stroke:ResetPosition()
 
@@ -221,8 +221,8 @@ function composer.ReCompose(Stroke: InterfaceWorksStroke)
 	HelperReCompose(Stroke, NewBuildTable, Stroke.CurrentComposition)
 	Stroke.CurrentComposition = NewBuildTable
 
-	composer.CurrentComposition = nil
+	Composer.CurrentComposition = nil
 	NextRender()
 end
 
-return composer
+return Composer

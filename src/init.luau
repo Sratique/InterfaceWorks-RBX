@@ -1,4 +1,6 @@
-warn("Running InterfaceWorks version: " .. _G.VERSION .. "@" .. _G.CHANNEL)
+if not game:GetService("RunService"):IsStudio() then
+	warn("Running InterfaceWorks version: " .. _G.VERSION .. "@" .. _G.CHANNEL)
+end
 
 local types = require("@Root/types")
 type InterfaceWorksElement = types.InterfaceWorksElement

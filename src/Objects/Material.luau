@@ -33,8 +33,6 @@ function MaterialObject.New(
 end
 
 function MaterialObject:AddTarget(Object: InterfaceWorksObject)
-	table.insert(self.Targets, Object)
-
 	for name: string, data: any in pairs(self.Properties.Default or {}) do
 		Object.Host[name] = data
 	end
@@ -45,6 +43,7 @@ function MaterialObject:AddTarget(Object: InterfaceWorksObject)
 		self.ReactivityWorkers[Object.Host] = Worker.New(self.ReactivityFunction(Object))
 	end
 
+	table.insert(self.Targets, Object)
 	Object:Destroying(function()
 		table.remove(self.Targets, table.find(self.Targets, Object))
 		self.ReactivityWorkers[Object.Host]:Disconnect()
