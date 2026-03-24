@@ -1,3 +1,5 @@
+local TweenService = game:GetService("TweenService")
+
 local types = require("@Root/types")
 type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksElement = types.InterfaceWorksElement
@@ -5,11 +7,12 @@ type InterfaceWorksValue = types.InterfaceWorksValue
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
 type InterfaceWorksObject = types.InterfaceWorksObject
 type InterfaceWorksBase = types.InterfaceWorksBase
+type InterfaceWorksAnimationData = types.InterfaceWorksElementData
 
 local Stroke = require("@BaseObject/Stroke")
 local Object = require("@BaseObject/Object")
-local InputTypesEnums = require("@Root/Forward/InputTypesEnums")
-local InputTypes = require("./InputTypes")
+local InputTypesEnums = require("@Root/Public/InputTypesEnums")
+local InputTypes = require("./InputTypesFunctions")
 
 local Composer = {}
 Composer.Compositions = {}
@@ -22,7 +25,8 @@ local function ScheduleRender(
 	Base: _InterfaceWorksComposition | InterfaceWorksStroke,
 	callback: (InterfaceWorksStroke) -> ()?,
 	Priority: number?,
-	Type: "ReCompose" | "Compose"
+	Type: "ReCompose" | "Compose",
+	Arguments: { any }?
 )
 	table.insert(Composer.RenderSchedule, {
 
@@ -30,6 +34,7 @@ local function ScheduleRender(
 		Callback = callback,
 		Priority = Priority,
 		Type = Type,
+		Arguments = Arguments,
 	})
 end
 
@@ -50,9 +55,9 @@ local function NextRender()
 		table.remove(Composer.RenderSchedule, LastMax)
 
 		if RenderTicket.Type == "Compose" then
-			Composer.Compose(RenderTicket.Base, RenderTicket.Callback)
+			Composer.Compose(RenderTicket.Base, RenderTicket.Callback, RenderTicket.Priority, RenderTicket.Arguments)
 		else
-			Composer.ReCompose(RenderTicket.Base)
+			Composer.ReCompose(RenderTicket.Base, RenderTicket.Arguments)
 		end
 
 		return
@@ -86,8 +91,14 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 				continue
 			end
 			Composer.Compose(Element.Composition, function(NewFragment: InterfaceWorksStroke)
-				SourceObject:Insert(Stroke, Element.FragmentName)
-			end, 100)
+				SourceObject:Insert(NewFragment, ElementName)
+			end, 100, Element.FragmentArguments)
+		elseif Element.Type == "Property" then
+			local HeadlessHost = Instance.new(Element.ID)
+			for prop: string, val: any in pairs(Element.Ps or {}) do
+				HeadlessHost[prop] = val
+			end
+			HeadlessHost.Parent = SourceObject.Host
 		else
 			local Host: any = Instance.new(Element.ID)
 			Host.Name = ElementName
@@ -101,6 +112,8 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 			for fndata: string, fn: (any) -> any in pairs(Element.Fs or {}) do
 				if InputTypes[fndata] then
 					local Worker = InputTypes[fndata](NewElementObject, fn)
+
+					print("Creating")
 
 					if Worker then
 						table.insert(NewElementObject.Workers, Worker)
@@ -117,6 +130,20 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 			if Element.Mt then
 				Element.Mt:AddTarget(NewElementObject)
 			end
+			if Element.An then
+				local AD = Element.An
+
+				local Tween = TweenService:Create(Host, AD.TI, AD.Goals)
+
+				table.insert(NewElementObject.Animations, Tween)
+
+				Tween.Completed:Connect(function()
+					table.remove(NewElementObject.Animations, table.find(NewElementObject.Animations, Tween))
+					Tween:Destroy()
+				end)
+
+				Tween:Play()
+			end
 			if Element.Cn then
 				HelperCompose(NewElementObject, Element.Cn)
 			end
@@ -127,10 +154,11 @@ end
 function Composer.Compose(
 	Composition: _InterfaceWorksComposition,
 	callback: (InterfaceWorksStroke) -> ()?,
-	Priority: number?
+	Priority: number?,
+	CompositionArguments: { any }?
 ) -- Priority is optional. Higher = faster render
 	if Composer.CurrentComposition then
-		ScheduleRender(Composition, callback, Priority or 99, "Compose")
+		ScheduleRender(Composition, callback, Priority or 99, "Compose", CompositionArguments)
 
 		return
 	end
@@ -138,7 +166,7 @@ function Composer.Compose(
 	local NewStroke: InterfaceWorksStroke = Stroke.New(Composition)
 	Composer.CurrentComposition = NewStroke
 
-	local BuildTable: { InterfaceWorksElement } = Composition()
+	local BuildTable: { InterfaceWorksElement } = Composition(unpack(CompositionArguments or {}))
 	NewStroke.CurrentComposition = BuildTable
 	HelperCompose(NewStroke, BuildTable)
 
@@ -172,7 +200,7 @@ function HelperReCompose(
 
 		if currentchild.Type == "Fragment" then
 			if currentObject:IsA("InterfaceWorksStroke") then
-				Composer.ReCompose(currentObject)
+				Composer.ReCompose(currentObject, currentchild.FragmentArguments)
 			end
 		else
 			if not legacychild then
@@ -199,6 +227,20 @@ function HelperReCompose(
 
 			--Continue children
 
+			if currentchild.An then
+				local AD = currentchild.An
+
+				local Tween = TweenService:Create(currentObject.Host, AD.TI, AD.Goals)
+
+				table.insert(currentObject.Animations, Tween)
+
+				Tween.Completed:Connect(function()
+					table.remove(currentObject.Animations, table.find(currentObject.Animations, Tween))
+					Tween:Destroy()
+				end)
+
+				Tween:Play()
+			end
 			if currentchild.Cn and legacychild.Cn then
 				HelperReCompose(currentObject, currentchild.Cn, legacychild.Cn)
 			end
@@ -206,9 +248,9 @@ function HelperReCompose(
 	end
 end
 
-function Composer.ReCompose(Stroke: InterfaceWorksStroke)
+function Composer.ReCompose(Stroke: InterfaceWorksStroke, Arguments: { any }?)
 	if Composer.CurrentComposition then
-		ScheduleRender(Stroke, nil, 1, "ReCompose")
+		ScheduleRender(Stroke, nil, 1, "ReCompose", Arguments)
 
 		return
 	end
@@ -216,7 +258,7 @@ function Composer.ReCompose(Stroke: InterfaceWorksStroke)
 
 	Stroke:ResetPosition()
 
-	local NewBuildTable: { InterfaceWorksElement } = Stroke.RetracingComposition()
+	local NewBuildTable: { InterfaceWorksElement } = Stroke.RetracingComposition(unpack(Arguments or {}))
 
 	HelperReCompose(Stroke, NewBuildTable, Stroke.CurrentComposition)
 	Stroke.CurrentComposition = NewBuildTable

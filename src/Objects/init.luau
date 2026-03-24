@@ -11,6 +11,7 @@ function BaseObject.New(SourceInstance: Instance?)
 	NewBaseObject[RootProperties] = {}
 	NewBaseObject[RootProperties].Children = {}
 	NewBaseObject[RootProperties].Destroying = {}
+	NewBaseObject[RootProperties].Inheritance = {}
 
 	NewBaseObject.Host = SourceInstance
 

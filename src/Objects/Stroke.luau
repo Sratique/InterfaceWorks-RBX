@@ -3,6 +3,7 @@ type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksValue = types.InterfaceWorksValue
 
 local BaseObject = require("@BaseObject")
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local Stroke = {}
 Stroke.__index = setmetatable(Stroke, BaseObject)
@@ -20,6 +21,8 @@ function Stroke.New(Composition: () -> any): InterfaceWorksStroke
 	NewStroke.CurrentPosition = 0
 
 	NewStroke.RetracingComposition = Composition
+
+	ProtectedObject.LayerInheritance(NewStroke, "InterfaceWorksStroke")
 
 	return NewStroke
 end

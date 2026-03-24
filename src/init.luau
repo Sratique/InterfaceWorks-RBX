@@ -6,12 +6,13 @@ local types = require("@Root/types")
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksElementData = types.InterfaceWorksElementData
 type InterfaceWorksMaterial = types.InterfaceWorksMaterial
+type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
 
 local Root = require("@BaseObject/Root")
-local InputTypes = require("@Root/Forward/InputTypesEnums")
-local Property = require("@Root/Forward/Property")
-local Materials = require("@Root/Forward/Materials")
-local Value = require("@Root/Forward/ValueController")
+local InputTypes = require("@Root/Public/InputTypesEnums")
+local Property = require("@Root/Public/Property")
+local Materials = require("@Root/Public/MaterialController")
+local Value = require("@Root/Public/ValueController")
 
 local InterfaceWorks = {}
 
@@ -43,6 +44,7 @@ function InterfaceWorks.CreateElement(
 		Ps = Data.Properties,
 		Fs = Data.Functions,
 		Mt = Data.Material,
+		An = Data.Animation,
 		Cn = Children,
 		Type = "Object",
 	}
@@ -50,15 +52,36 @@ function InterfaceWorks.CreateElement(
 	return Struct
 end
 
-function InterfaceWorks.CreateFragment(
-	Composition: () -> InterfaceWorksElement,
-	FragmentName: string
-): InterfaceWorksElement
+function InterfaceWorks.CreateAnimation(AnimationData: {
+	Goals: { [string]: any },
+	Duration: number,
+	EasingStyle: Enum.EasingStyle?,
+	EasingDirection: Enum.EasingDirection?,
+	RepeatCount: number?,
+	Reverses: boolean?,
+	delayTime: number?,
+}): InterfaceWorksAnimationData
+	local NewAnimationData = {
+		Goals = AnimationData.Goals,
+		TI = TweenInfo.new(
+			AnimationData.Duration,
+			AnimationData.EasingStyle or Enum.EasingStyle.Linear,
+			AnimationData.EasingDirection or Enum.EasingDirection.In,
+			AnimationData.RepeatCount or 0,
+			AnimationData.Reverses or false,
+			AnimationData.delayTime or 0
+		),
+	}
+
+	return NewAnimationData
+end
+
+function InterfaceWorks.CreateFragment(Composition: () -> InterfaceWorksElement, ...: any): InterfaceWorksElement
 	local Struct = {
 		ID = nil,
 		Type = "Fragment",
 		Composition = Composition,
-		FragmentName = FragmentName,
+		FragmentArguments = { ... },
 	}
 
 	return Struct

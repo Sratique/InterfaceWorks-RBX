@@ -13,6 +13,7 @@ function Object.New(SourceInstance: GuiObject): InterfaceWorksObject
 	local NewObject = setmetatable(NewBaseObject, Object)
 
 	NewObject.Workers = {}
+	NewObject.Animations = {}
 
 	return NewObject
 end

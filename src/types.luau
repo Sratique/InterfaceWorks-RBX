@@ -36,6 +36,7 @@ export type InterfaceWorksObject = {
 	GetTreeRoot: () -> InterfaceWorksBase,
 	IsA: (self: any, ClassName: string) -> boolean,
 	Destroying: (self: any, callback: () -> ()) -> (),
+	Animations: {},
 }
 
 export type InterfaceWorksElementData = {
@@ -47,6 +48,7 @@ export type InterfaceWorksElementData = {
 		[InterfaceWorksType | string]: (any) -> any,
 	}?,
 	Material: InterfaceWorksMaterial?,
+	Animation: InterfaceWorksAnimationData?,
 }
 
 export type InterfaceWorksElement = {
@@ -57,8 +59,9 @@ export type InterfaceWorksElement = {
 	Fs: { [InterfaceWorksType | string]: (any) -> any }?,
 	Cn: { [string | number]: InterfaceWorksElement }?,
 	Mt: InterfaceWorksMaterial?,
+	An: InterfaceWorksAnimationData?,
 	Composition: (() -> InterfaceWorksElement)?,
-	FragmentName: string?,
+	FragmentArguments: { any }?,
 }
 
 export type InterfaceWorksWorker = {
@@ -68,7 +71,7 @@ export type InterfaceWorksWorker = {
 	ChildProcesses: { InterfaceWorksWorker },
 }
 
-export type _InterfaceWorksComposition = () -> InterfaceWorksElement
+export type _InterfaceWorksComposition = (any) -> InterfaceWorksElement
 
 export type InterfaceWorksValue = {
 
@@ -76,6 +79,11 @@ export type InterfaceWorksValue = {
 	OnChange: (self: InterfaceWorksValue, () -> ()) -> (),
 	Set: (any) -> (),
 	Destroy: (any) -> (),
+}
+
+export type InterfaceWorksAnimationData = {
+	Goals: { [string]: any },
+	TI: TweenInfo,
 }
 
 export type InterfaceWorksStroke = {
