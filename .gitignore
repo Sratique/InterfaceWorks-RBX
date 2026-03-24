@@ -7,6 +7,6 @@
 
 /DarkluaOutput
 /.vscode
-/sourcemap
+sourcemap.json
 
 .DS_Store
