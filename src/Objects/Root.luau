@@ -3,6 +3,7 @@ type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksRoot = types.InterfaceWorksRoot
 
 local BaseObject = require("@BaseObject")
+
 local Composer = require("@Root/Internal/Composer")
 
 local TreeRoot = {}

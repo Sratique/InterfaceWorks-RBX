@@ -15,7 +15,6 @@ local InputTypesEnums = require("@Root/Public/InputTypesEnums")
 local InputTypes = require("./InputTypesFunctions")
 
 local Composer = {}
-Composer.Compositions = {}
 Composer.CurrentComposition = nil
 Composer.RenderSchedule = {}
 

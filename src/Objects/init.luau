@@ -1,9 +1,8 @@
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
+local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 local BaseObject = {}
 BaseObject.__index = BaseObject
-
-local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 function BaseObject.New(SourceInstance: Instance?)
 	local NewBaseObject = setmetatable({}, BaseObject)
@@ -18,6 +17,16 @@ function BaseObject.New(SourceInstance: Instance?)
 	return NewBaseObject
 end
 
+function BaseObject:__Remove(index: number | string)
+	self[index] = nil
+end
+
+function BaseObject:__Destroy()
+	for _, v: () -> () in pairs(self[RootProperties].Destroying) do
+		v()
+	end
+end
+
 function BaseObject:IsA(ClassName: string)
 	return ClassName == (self[RootProperties].ClassName or "BaseObject")
 		or self[RootProperties].Inheritance and table.find(self[RootProperties].Inheritance, ClassName) ~= nil
@@ -29,16 +38,6 @@ end
 
 function BaseObject:GetTreeRoot()
 	return self[RootProperties].TreeRoot
-end
-
-function BaseObject:_Remove(index: number | string)
-	self[index] = nil
-end
-
-function BaseObject:_Destroy()
-	for _, v: () -> () in pairs(self[RootProperties].Destroying) do
-		v()
-	end
 end
 
 function BaseObject:Destroying(callback: () -> ())

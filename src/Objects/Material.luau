@@ -1,8 +1,9 @@
+local RunService = game:GetService("RunService")
+
 local types = require("@Root/types")
 type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 type InterfaceWorksObject = types.InterfaceWorksObject
 
-local RunService = game:GetService("RunService")
 local BaseObject = require("@BaseObject")
 local Worker = require("@BaseObject/Worker")
 
@@ -11,15 +12,17 @@ MaterialObject.__index = setmetatable(MaterialObject, BaseObject)
 
 function MaterialObject.New(
 	DefaultProperties: { [string | "Default"]: { [string]: any } },
-	Reactivity: (InterfaceWorksObject) -> ...RBXScriptConnection,
-	ConstantReactivity: (InterfaceWorksObject) -> ()
+	Reactivity: (InterfaceWorksObject) -> ...RBXScriptConnection?,
+	ConstantReactivity: (InterfaceWorksObject) -> ()?
 ): InterfaceWorksMaterial
-	local NewMaterialObject = setmetatable({
-		Properties = DefaultProperties,
-		Targets = {},
-		ReactivityWorkers = {},
-		ReactivityFunction = Reactivity,
-	}, MaterialObject)
+	local NewBaseObject = BaseObject.New()
+
+	local NewMaterialObject = setmetatable(NewBaseObject, MaterialObject)
+
+	NewMaterialObject.Properties = DefaultProperties
+	NewMaterialObject.Targets = {}
+	NewMaterialObject.ReactivityWorkers = {}
+	NewMaterialObject.ReactivityFunction = Reactivity
 
 	if ConstantReactivity then
 		NewMaterialObject.ConstantReactivityWorker = RunService.RenderStepped:Connect(function()
