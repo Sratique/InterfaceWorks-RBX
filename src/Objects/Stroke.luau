@@ -3,6 +3,7 @@ type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksValue = types.InterfaceWorksValue
 
 local BaseObject = require("@BaseObject")
+
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local Stroke = {}
@@ -64,16 +65,10 @@ function Stroke:ReMount()
 end
 
 function Stroke:Destroy()
-	for _, v in pairs(self:GetChildren()) do
-		v:Destroy()
-	end
-
 	for _, v: InterfaceWorksValue in pairs(self.Values) do
 		v:Destroy()
 	end
-	table.clear(self.Values)
-	setmetatable(self, nil)
-	table.clear(self)
+	self:__Destroy()
 end
 
 return Stroke

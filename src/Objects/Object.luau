@@ -4,6 +4,8 @@ type InterfaceWorksWorker = types.InterfaceWorksWorker
 
 local BaseObject = require("@BaseObject")
 
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
+
 local Object = {}
 Object.__index = setmetatable(Object, BaseObject)
 
@@ -12,6 +14,8 @@ function Object.New(SourceInstance: GuiObject): InterfaceWorksObject
 
 	local NewObject = setmetatable(NewBaseObject, Object)
 
+	ProtectedObject.LayerInheritance(Object, "InterfaceWorksObject")
+
 	NewObject.Workers = {}
 	NewObject.Animations = {}
 
@@ -19,21 +23,11 @@ function Object.New(SourceInstance: GuiObject): InterfaceWorksObject
 end
 
 function Object:Destroy()
-	self.Host:Destroy()
-	self:_Destroy()
-	self.Host = nil
-	for _, v in pairs(self:GetChildren()) do
-		v:Destroy()
-	end
 	for _, v: InterfaceWorksWorker in pairs(self.Workers) do
 		v:Disconnect()
 	end
 
-	self.Parent:_Remove(self.Name)
-
-	setmetatable(self, nil)
-	table.clear(self)
-	self = nil
+	self:__Destroy()
 end
 
 return Object

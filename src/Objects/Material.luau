@@ -7,6 +7,8 @@ type InterfaceWorksObject = types.InterfaceWorksObject
 local BaseObject = require("@BaseObject")
 local Worker = require("@BaseObject/Worker")
 
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
+
 local MaterialObject = {}
 MaterialObject.__index = setmetatable(MaterialObject, BaseObject)
 
@@ -18,6 +20,8 @@ function MaterialObject.New(
 	local NewBaseObject = BaseObject.New()
 
 	local NewMaterialObject = setmetatable(NewBaseObject, MaterialObject)
+
+	ProtectedObject.LayerInheritance(NewMaterialObject, "InterfaceWorksMaterial")
 
 	NewMaterialObject.Properties = DefaultProperties
 	NewMaterialObject.Targets = {}
@@ -60,6 +64,8 @@ function MaterialObject:Destroy()
 	for _, v in pairs(self.ReactivityWorkers) do
 		v:Disconnect()
 	end
+
+	self:__Destroy()
 end
 
 return MaterialObject

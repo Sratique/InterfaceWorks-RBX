@@ -5,6 +5,7 @@ type InterfaceWorksRoot = types.InterfaceWorksRoot
 local BaseObject = require("@BaseObject")
 
 local Composer = require("@Root/Internal/Composer")
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local TreeRoot = {}
 TreeRoot.__index = setmetatable(TreeRoot, BaseObject)
@@ -13,6 +14,8 @@ function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
 	local NewBaseObject = BaseObject.New(SourceInstance)
 
 	local NewTreeRoot = setmetatable(NewBaseObject, TreeRoot)
+
+	ProtectedObject.LayerInheritance(NewTreeRoot, "InterfaceWorksRoot")
 
 	return NewTreeRoot
 end
