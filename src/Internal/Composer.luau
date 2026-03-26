@@ -112,8 +112,6 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 				if InputTypes[fndata] then
 					local Worker = InputTypes[fndata](NewElementObject, fn)
 
-					print("Creating")
-
 					if Worker then
 						table.insert(NewElementObject.Workers, Worker)
 					end

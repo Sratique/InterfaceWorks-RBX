@@ -14,7 +14,7 @@ function Object.New(SourceInstance: GuiObject): InterfaceWorksObject
 
 	local NewObject = setmetatable(NewBaseObject, Object)
 
-	ProtectedObject.LayerInheritance(Object, "InterfaceWorksObject")
+	ProtectedObject.LayerInheritance(NewObject, "InterfaceWorksObject")
 
 	NewObject.Workers = {}
 	NewObject.Animations = {}

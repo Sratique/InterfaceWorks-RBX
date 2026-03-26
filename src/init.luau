@@ -13,6 +13,7 @@ local InputTypes = require("@Root/Public/InputTypesEnums")
 local Property = require("@Root/Public/Property")
 local Materials = require("@Root/Public/MaterialController")
 local Value = require("@Root/Public/ValueController")
+local Assets = require("@Root/Public/AssetsBank")
 
 local InterfaceWorks = {}
 
@@ -21,6 +22,7 @@ InterfaceWorks.InputTypes = InputTypes
 InterfaceWorks.CreateProperty = Property
 InterfaceWorks.Types = types
 InterfaceWorks.Materials = Materials
+InterfaceWorks.Assets = Assets
 
 function InterfaceWorks.CreateRoot(Container: Instance?)
 	local Base = Container or Instance.new("ScreenGui")
