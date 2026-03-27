@@ -57,6 +57,8 @@ end
 
 function InterfaceWorks.CreateAnimation(AnimationData: {
 	Goals: { [string]: any },
+	BeginningPoint: { any }?,
+	BeginningPointRepeats: boolean?,
 	Duration: number,
 	EasingStyle: Enum.EasingStyle?,
 	EasingDirection: Enum.EasingDirection?,
@@ -66,6 +68,8 @@ function InterfaceWorks.CreateAnimation(AnimationData: {
 }): InterfaceWorksAnimationData
 	local NewAnimationData = {
 		Goals = AnimationData.Goals,
+		BeginningPoint = AnimationData.BeginningPoint,
+		BeginningPointRepeats = AnimationData.BeginningPointRepeats,
 		TI = TweenInfo.new(
 			AnimationData.Duration,
 			AnimationData.EasingStyle or Enum.EasingStyle.Linear,

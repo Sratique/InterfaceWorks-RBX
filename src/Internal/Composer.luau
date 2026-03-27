@@ -130,6 +130,12 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 			if Element.An then
 				local AD = Element.An
 
+				if AD.BeginningPoint then
+					for prop, data in pairs(AD.BeginningPoint) do
+						Host[prop] = data
+					end
+				end
+
 				local Tween = TweenService:Create(Host, AD.TI, AD.Goals)
 
 				table.insert(NewElementObject.Animations, Tween)
@@ -226,6 +232,12 @@ function HelperReCompose(
 
 			if currentchild.An then
 				local AD = currentchild.An
+
+				if AD.BeginningPoint and AD.BeginningPointRepeats then
+					for prop, data in pairs(AD.BeginningPoint) do
+						currentObject.Host[prop] = data
+					end
+				end
 
 				local Tween = TweenService:Create(currentObject.Host, AD.TI, AD.Goals)
 

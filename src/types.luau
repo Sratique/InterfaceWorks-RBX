@@ -83,6 +83,8 @@ export type InterfaceWorksValue = {
 
 export type InterfaceWorksAnimationData = {
 	Goals: { [string]: any },
+	BeginningPoint: { any }?,
+	BeginningPointRepeats: boolean?,
 	TI: TweenInfo,
 }
 
