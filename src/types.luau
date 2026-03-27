@@ -8,34 +8,34 @@ export type InterfaceWorksMaterial = {
 	ReactivityWorkers: InterfaceWorksWorker,
 	ReactivityFunction: (InterfaceWorksObject) -> ...RBXScriptConnection,
 	ConstantReactivityWorker: InterfaceWorksWorker,
-	AddTarget: (self: any, InterfaceWorksObject) -> (),
+	AddTarget: (self: InterfaceWorksMaterial, InterfaceWorksObject) -> (),
 }
 
 export type InterfaceWorksBase = {
 
-	Insert: (self: any, any, any) -> (),
-	GetChildren: () -> { InterfaceWorksBase },
-	GetTreeRoot: () -> InterfaceWorksBase,
-	IsA: (self: any, ClassName: string) -> boolean,
+	Insert: (self: InterfaceWorksBase, any, any) -> (),
+	GetChildren: (self: InterfaceWorksBase) -> { InterfaceWorksBase },
+	GetTreeRoot: (self: InterfaceWorksBase) -> InterfaceWorksBase,
+	IsA: (self: InterfaceWorksBase, ClassName: string) -> boolean,
 	Host: any,
 }
 
 export type InterfaceWorksRoot = {
 
-	Attach: (Composition: _InterfaceWorksComposition, ID: string?) -> (),
-	DestroyStroke: (ID: string | "Main") -> (),
+	Attach: (self: InterfaceWorksRoot, Composition: _InterfaceWorksComposition, ID: string?) -> (),
+	DestroyStroke: (self: InterfaceWorksRoot, ID: string | "Main") -> (),
 }
 
 export type InterfaceWorksObject = {
 
 	Host: GuiObject,
-	Insert: (self: any, any, any) -> (),
-	Destroy: (self: any) -> (),
+	Insert: (self: InterfaceWorksObject, any, any) -> (),
+	Destroy: (self: InterfaceWorksObject) -> (),
 	Workers: { InterfaceWorksWorker },
-	GetChildren: () -> { InterfaceWorksBase },
-	GetTreeRoot: () -> InterfaceWorksBase,
-	IsA: (self: any, ClassName: string) -> boolean,
-	Destroying: (self: any, callback: () -> ()) -> (),
+	GetChildren: (self: InterfaceWorksObject) -> { InterfaceWorksBase },
+	GetTreeRoot: (self: InterfaceWorksObject) -> InterfaceWorksBase,
+	IsA: (self: InterfaceWorksObject, ClassName: string) -> boolean,
+	Destroying: (self: InterfaceWorksObject, callback: () -> ()) -> (),
 	Animations: {},
 }
 
@@ -60,7 +60,7 @@ export type InterfaceWorksElement = {
 	Cn: { [string | number]: InterfaceWorksElement }?,
 	Mt: InterfaceWorksMaterial?,
 	An: InterfaceWorksAnimationData?,
-	Composition: (() -> InterfaceWorksElement)?,
+	Composition: _InterfaceWorksComposition?,
 	FragmentArguments: { any }?,
 }
 
@@ -71,14 +71,14 @@ export type InterfaceWorksWorker = {
 	ChildProcesses: { InterfaceWorksWorker },
 }
 
-export type _InterfaceWorksComposition = (any) -> InterfaceWorksElement
+export type _InterfaceWorksComposition = (...any) -> { InterfaceWorksElement }
 
 export type InterfaceWorksValue = {
 
 	Value: any,
 	OnChange: (self: InterfaceWorksValue, () -> ()) -> (),
-	Set: (any) -> (),
-	Destroy: (any) -> (),
+	Set: (self: InterfaceWorksValue, any) -> (),
+	Destroy: (self: InterfaceWorksValue, any) -> (),
 }
 
 export type InterfaceWorksAnimationData = {
@@ -96,12 +96,12 @@ export type InterfaceWorksStroke = {
 	InsertValue: (InterfaceWorksValue) -> (),
 	Insert: (self: InterfaceWorksStroke, any, any) -> (),
 	Host: GuiObject,
-	GetCurrentValue: () -> InterfaceWorksValue,
+	GetCurrentValue: (self: InterfaceWorksStroke) -> InterfaceWorksValue,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
-	GetChildren: () -> { InterfaceWorksBase },
-	GetTreeRoot: () -> InterfaceWorksBase,
+	GetChildren: (self: InterfaceWorksStroke) -> { InterfaceWorksBase },
+	GetTreeRoot: (self: InterfaceWorksStroke) -> InterfaceWorksBase,
 	CurrentPosition: number,
-	IsA: (self: any, ClassName: string) -> boolean,
+	IsA: (self: InterfaceWorksStroke, ClassName: string) -> boolean,
 }
 
 return Types

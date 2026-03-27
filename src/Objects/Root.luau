@@ -1,6 +1,7 @@
 local types = require("@Root/types")
 type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksRoot = types.InterfaceWorksRoot
+type _InterfaceWorksComposition = types._InterfaceWorksComposition
 
 local BaseObject = require("@BaseObject")
 
@@ -20,7 +21,7 @@ function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
 	return NewTreeRoot
 end
 
-function TreeRoot:Attach(Composition: () -> types.InterfaceWorksElement, ID: string?)
+function TreeRoot:Attach(Composition: _InterfaceWorksComposition, ID: string?)
 	Composer.Compose(Composition, function(ComposedStroke: InterfaceWorksStroke)
 		ComposedStroke.Host.Name = ID or "Main"
 

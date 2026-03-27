@@ -7,6 +7,7 @@ type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksElementData = types.InterfaceWorksElementData
 type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
+type _InterfaceWorksComposition = types._InterfaceWorksComposition
 
 local Root = require("@Objects/Root")
 local InputTypes = require("@Root/Public/InputTypesEnums")
@@ -78,7 +79,7 @@ function InterfaceWorks.CreateAnimation(AnimationData: {
 	return NewAnimationData
 end
 
-function InterfaceWorks.CreateFragment(Composition: () -> InterfaceWorksElement, ...: any): InterfaceWorksElement
+function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, ...: any): InterfaceWorksElement
 	local Struct = {
 		ID = nil,
 		Type = "Fragment",

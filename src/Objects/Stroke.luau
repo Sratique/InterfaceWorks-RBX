@@ -1,6 +1,7 @@
 local types = require("@Root/types")
 type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksValue = types.InterfaceWorksValue
+type _InterfaceWorksComposition = types._InterfaceWorksComposition
 
 local BaseObject = require("@BaseObject")
 
@@ -9,7 +10,7 @@ local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local Stroke = {}
 Stroke.__index = setmetatable(Stroke, BaseObject)
 
-function Stroke.New(Composition: () -> any): InterfaceWorksStroke
+function Stroke.New(Composition: _InterfaceWorksComposition): InterfaceWorksStroke
 	local VirtualHost = Instance.new("Frame")
 	VirtualHost.Size = UDim2.fromScale(1, 1)
 	VirtualHost.BackgroundTransparency = 1

@@ -8,7 +8,7 @@ local InputTypesEnums = require("@Root/Public/InputTypesEnums")
 
 return {
 
-	[InputTypesEnums.Click] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ()) -- No need for a seperate worker
+	[InputTypesEnums.Click] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any) -- No need for a seperate worker
 		if self.Host:IsA("TextButton") or self.Host:IsA("ImageButton") then
 			self.Host.Activated:Connect(function()
 				Callback(self)
@@ -21,14 +21,17 @@ return {
 			end)
 		end
 	end,
-	[InputTypesEnums.BeganClick] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ())
+	[InputTypesEnums.BeganClick] = function(
+		self: InterfaceWorksObject,
+		Callback: (self: InterfaceWorksObject) -> ...any
+	)
 		self.Host.InputBegan:Connect(function(key)
 			if key.UserInputType == Enum.UserInputType.MouseButton1 then
 				Callback(self)
 			end
 		end)
 	end,
-	[InputTypesEnums.Drag] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ()) -- No need for a seperate worker
+	[InputTypesEnums.Drag] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any) -- No need for a seperate worker
 		local CanDrag = false
 
 		self.Host.InputBegan:Connect(function(key)
@@ -51,10 +54,10 @@ return {
 
 		return Worker.New(RenderUsage)
 	end,
-	[InputTypesEnums.Once] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ())
+	[InputTypesEnums.Once] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
 		return Worker.New(Callback(self))
 	end,
-	[InputTypesEnums.Render] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ())
+	[InputTypesEnums.Render] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
 		Callback(self)
 		return nil
 	end,
