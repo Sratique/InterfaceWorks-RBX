@@ -9,8 +9,8 @@ type InterfaceWorksObject = types.InterfaceWorksObject
 type InterfaceWorksBase = types.InterfaceWorksBase
 type InterfaceWorksAnimationData = types.InterfaceWorksElementData
 
-local Stroke = require("@BaseObject/Stroke")
-local Object = require("@BaseObject/Object")
+local Stroke = require("@Objects/Stroke")
+local Object = require("@Objects/Object")
 local InputTypesEnums = require("@Root/Public/InputTypesEnums")
 local InputTypes = require("./InputTypesFunctions")
 

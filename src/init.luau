@@ -8,7 +8,7 @@ type InterfaceWorksElementData = types.InterfaceWorksElementData
 type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
 
-local Root = require("@BaseObject/Root")
+local Root = require("@Objects/Root")
 local InputTypes = require("@Root/Public/InputTypesEnums")
 local Property = require("@Root/Public/Property")
 local Materials = require("@Root/Public/MaterialController")

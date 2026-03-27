@@ -5,7 +5,7 @@ type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 type InterfaceWorksObject = types.InterfaceWorksObject
 
 local BaseObject = require("@BaseObject")
-local Worker = require("@BaseObject/Worker")
+local Worker = require("@Objects/Worker")
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 

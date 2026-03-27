@@ -3,7 +3,7 @@ type InterfaceWorksObject = types.InterfaceWorksObject
 
 local RunService = game:GetService("RunService")
 
-local Worker = require("@BaseObject/Worker")
+local Worker = require("@Objects/Worker")
 local InputTypesEnums = require("@Root/Public/InputTypesEnums")
 
 return {

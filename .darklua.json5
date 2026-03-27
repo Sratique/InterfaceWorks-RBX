@@ -4,7 +4,7 @@
       rule: "convert_require",
       current: "path",
       target: {
-        name: "roblox"
+        name: "luau"
       }
     },
     {

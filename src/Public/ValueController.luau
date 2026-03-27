@@ -1,7 +1,7 @@
 local types = require("@Root/types")
 type InterfaceWorksValue = types.InterfaceWorksValue
 
-local ValueClass = require("@BaseObject/Value")
+local ValueClass = require("@Objects/Value")
 local Composer = require("@Root/Internal/Composer")
 
 local Value = {}
