@@ -5,4 +5,6 @@ return {
 	["BeganClick"] = 3,
 	["Once"] = 4,
 	["Render"] = 5,
+	["Focus"] = 6,
+	["FocusLost"] = 7,
 }

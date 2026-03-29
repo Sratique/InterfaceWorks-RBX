@@ -54,6 +54,27 @@ return {
 
 		return Worker.New(RenderUsage)
 	end,
+	[InputTypesEnums.Focus] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
+		if self.Host:IsA("TextBox") then
+			self.Host.Focused:Connect(function()
+				Callback(self)
+			end)
+		else
+			warn("This API is only accessible to TextBoxes. For other GuiObjects use the Click API.")
+		end
+	end,
+	[InputTypesEnums.FocusLost] = function(
+		self: InterfaceWorksObject,
+		Callback: (self: InterfaceWorksObject) -> ...any
+	)
+		if self.Host:IsA("TextBox") then
+			self.Host.FocusLost:Connect(function()
+				Callback(self)
+			end)
+		else
+			warn("This API is only accessible to TextBoxes.")
+		end
+	end,
 	[InputTypesEnums.Once] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
 		return Worker.New(Callback(self))
 	end,
