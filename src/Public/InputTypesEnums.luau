@@ -7,4 +7,6 @@ return {
 	["Render"] = 5,
 	["Focus"] = 6,
 	["FocusLost"] = 7,
+	["Enter"] = 8,
+	["Leave"] = 9,
 }

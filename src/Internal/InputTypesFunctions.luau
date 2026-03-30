@@ -75,6 +75,16 @@ return {
 			warn("This API is only accessible to TextBoxes.")
 		end
 	end,
+	[InputTypesEnums.Enter] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
+		self.Host.MouseEnter:Connect(function()
+			Callback(self)
+		end)
+	end,
+	[InputTypesEnums.Leave] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
+		self.Host.MouseLeave:Connect(function()
+			Callback(self)
+		end)
+	end,
 	[InputTypesEnums.Once] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
 		return Worker.New(Callback(self))
 	end,
