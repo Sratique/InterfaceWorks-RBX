@@ -24,6 +24,7 @@ export type InterfaceWorksRoot = {
 
 	Attach: (self: InterfaceWorksRoot, Composition: _InterfaceWorksComposition, ID: string?) -> (),
 	DestroyStroke: (self: InterfaceWorksRoot, ID: string | "Main") -> (),
+	Destroy: (self: InterfaceWorksRoot) -> (),
 }
 
 export type InterfaceWorksObject = {
