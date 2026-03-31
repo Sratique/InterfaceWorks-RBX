@@ -56,18 +56,23 @@ function BaseObject:Destroying(callback: () -> ())
 end
 
 function BaseObject:Insert(Object, ID: string)
-	table.insert(self[RootProperties].Children, Object)
-	Object[RootProperties].TreeRoot = if self[RootProperties].TreeRoot == nil
+	table.insert(self[RootProperties].Children, Object) -- add to the internal table so that the getchildren function will also return this object
+
+	Object[RootProperties].TreeRoot = if self[RootProperties].TreeRoot
+			== nil -- Add the treeroot instance for the api of that instance especially if its a dockwidgetui
 		then self
 		else self[RootProperties].TreeRoot
-	Object.Parent = self
-	Object.Name = ID
+
+	Object.Parent = self -- set the hierarchy stuff
+
+	Object.Name = ID -- for when you need to do indexing stuff idk
 	if ID then
 		self[ID] = Object
 	else
 		table.insert(self, Object)
 	end
-	if Object.Host and self.Host then
+
+	if Object.Host and self.Host then -- actually kinda like parent it finally
 		Object.Host.Parent = self.Host
 	end
 end

@@ -29,6 +29,10 @@ function TreeRoot:Attach(Composition: _InterfaceWorksComposition, ID: string?)
 	end)
 end
 
+function TreeRoot:Destroy()
+	self:__Destroy()
+end
+
 function TreeRoot:DestroyStroke(ID: string | "Main")
 	local Object = self[ID or "Main"]
 	if Object then
