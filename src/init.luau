@@ -21,7 +21,6 @@ local InterfaceWorks = {}
 InterfaceWorks.Value = Value
 InterfaceWorks.InputTypes = InputTypes
 InterfaceWorks.CreateProperty = Property
-InterfaceWorks.Types = types
 InterfaceWorks.Materials = Materials
 InterfaceWorks.Assets = Assets
 

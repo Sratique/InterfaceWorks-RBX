@@ -1,10 +1,12 @@
 local types = require("@Root/types")
 type InterfaceWorksObject = types.InterfaceWorksObject
 type InterfaceWorksWorker = types.InterfaceWorksWorker
+type InterfaceWorksStroke = types.InterfaceWorksStroke
 
 local BaseObject = require("@BaseObject")
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
+local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 local Object = {}
 Object.__index = setmetatable(Object, BaseObject)
@@ -20,6 +22,10 @@ function Object.New(SourceInstance: GuiObject): InterfaceWorksObject
 	NewObject.Animations = {}
 
 	return NewObject
+end
+
+function Object:GetTreeStroke(): InterfaceWorksStroke
+	return self[RootProperties].TreeRoot
 end
 
 function Object:Destroy()

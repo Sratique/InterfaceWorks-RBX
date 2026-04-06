@@ -6,6 +6,7 @@ type _InterfaceWorksComposition = types._InterfaceWorksComposition
 local BaseObject = require("@BaseObject")
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
+local Mouse = require("./Mouse")
 
 local Stroke = {}
 Stroke.__index = setmetatable(Stroke, BaseObject)
@@ -19,10 +20,13 @@ function Stroke.New(Composition: _InterfaceWorksComposition): InterfaceWorksStro
 
 	local NewStroke = setmetatable(NewBaseObject, Stroke)
 
+	NewStroke.Mouse = Mouse.New(NewStroke)
+
 	NewStroke.Values = {}
 	NewStroke.CurrentPosition = 0
 
 	NewStroke.RetracingComposition = Composition
+	NewStroke.CurrentComposition = nil
 
 	ProtectedObject.LayerInheritance(NewStroke, "InterfaceWorksStroke")
 
@@ -70,6 +74,10 @@ function Stroke:Destroy()
 		v:Destroy()
 	end
 	self:__Destroy()
+end
+
+function Stroke:GetMouse()
+	return self.Mouse
 end
 
 return Stroke

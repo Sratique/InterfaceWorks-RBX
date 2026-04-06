@@ -1,0 +1,51 @@
+local UserInputService = game:GetService("UserInputService")
+
+local types = require("@Root/types")
+type InterfaceWorksMouse = types.InterfaceWorksMouse
+type InterfaceWorksRoot = types.InterfaceWorksRoot
+
+local BaseObject = require("@BaseObject")
+
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
+
+--Shared object for both UI types
+local MouseShared = {}
+MouseShared.__index = setmetatable(MouseShared, BaseObject)
+
+--Needed since these two operate differently
+local MouseScreenGui = {}
+MouseScreenGui.__index = setmetatable(MouseScreenGui, MouseShared)
+local MousePlugin = {}
+MousePlugin.__index = setmetatable(MousePlugin, MouseShared)
+
+function MouseShared.New(Root: InterfaceWorksRoot): InterfaceWorksMouse
+	local NewBaseObject = BaseObject.New(Root.Host)
+
+	local Host = if Root.Parent
+			and Root.Parent.Host
+			and Root.Parent.Host:IsA("DockWidgetPluginGui")
+		then MousePlugin
+		else MouseScreenGui
+
+	local NewMouse = setmetatable(NewBaseObject, Host)
+
+	ProtectedObject.LayerInheritance(NewMouse, "InterfaceWorksMouse")
+
+	return NewMouse
+end
+
+--Plugin instruction set--
+
+function MousePlugin:GetLocation(): Vector2
+	local Dock: DockWidgetPluginGui = self.Host
+
+	return Dock:GetRelativeMousePosition()
+end
+
+--ScreenGui instruction set--
+
+function MouseScreenGui:GetLocation(): Vector2
+	return UserInputService:GetMouseLocation()
+end
+
+return MouseShared

@@ -48,7 +48,7 @@ function BaseObject:GetChildren()
 end
 
 function BaseObject:GetTreeRoot()
-	return self[RootProperties].TreeRoot
+	return self[RootProperties].TreeRoot.Parent or self[RootProperties].TreeRoot
 end
 
 function BaseObject:Destroying(callback: () -> ())

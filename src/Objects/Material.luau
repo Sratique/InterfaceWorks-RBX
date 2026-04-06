@@ -40,6 +40,10 @@ function MaterialObject.New(
 end
 
 function MaterialObject:AddTarget(Object: InterfaceWorksObject)
+	if not Object.Host or not Object.Host:IsA("GuiObject") then
+		return
+	end
+
 	for name: string, data: any in pairs(self.Properties.Default or {}) do
 		Object.Host[name] = data
 	end

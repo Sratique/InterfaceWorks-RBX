@@ -1,1 +1,1 @@
-{"aliases":{"Root":"src", "BaseObject":"src/Objects/BaseObject", "Objects": "src/Objects"}}
+{"aliases":{"Root":"src", "BaseObject":"src/Objects/Base", "Objects": "src/Objects"}}
