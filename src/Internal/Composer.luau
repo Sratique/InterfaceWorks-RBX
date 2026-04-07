@@ -107,6 +107,7 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 			end
 
 			local NewElementObject: InterfaceWorksObject = Object.New(Host)
+			SourceObject:Insert(NewElementObject, ElementName)
 
 			for fndata: string, fn: (any) -> any in pairs(Element.Fs or {}) do
 				if InputTypes[fndata] then
@@ -121,8 +122,6 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 					fn(NewElementObject)
 				end
 			end
-
-			SourceObject:Insert(NewElementObject, ElementName)
 
 			if Element.Mt then
 				Element.Mt:AddTarget(NewElementObject)
