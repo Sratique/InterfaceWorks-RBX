@@ -27,6 +27,7 @@ export type InterfaceWorksStroke = InterfaceWorksBase & {
 	Insert: (self: InterfaceWorksStroke, any, any) -> (),
 	GetCurrentValue: (self: InterfaceWorksStroke) -> InterfaceWorksValue,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
+	Destroy: (self: InterfaceWorksStroke) -> (),
 	GetMouse: (self: InterfaceWorksStroke) -> InterfaceWorksMouse,
 	CurrentPosition: number,
 	Values: { number: any },
