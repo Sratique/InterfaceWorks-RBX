@@ -19,6 +19,9 @@ end
 
 function BaseObject:__Remove(index: number | string)
 	self[index] = nil
+	if self[RootProperties].Children[index] then
+		self[RootProperties].Children[index] = nil
+	end
 end
 
 function BaseObject:__Destroy()
@@ -32,6 +35,10 @@ function BaseObject:__Destroy()
 
 	if self.Parent then
 		self.Parent:__Remove(self.Name)
+	end
+
+	if self.Host then
+		self.Host:Destroy()
 	end
 
 	setmetatable(self, nil)
