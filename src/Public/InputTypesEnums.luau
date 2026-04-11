@@ -9,4 +9,7 @@ return {
 	["FocusLost"] = 7,
 	["Enter"] = 8,
 	["Leave"] = 9,
+	["RightClick"] = 10,
+	["RightDrag"] = 11,
+	["RightBeganClick"] = 12,
 }

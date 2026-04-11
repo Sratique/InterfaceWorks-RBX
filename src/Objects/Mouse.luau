@@ -19,25 +19,28 @@ local MousePlugin = {}
 MousePlugin.__index = setmetatable(MousePlugin, MouseShared)
 
 function MouseShared.New(Root: InterfaceWorksRoot): InterfaceWorksMouse
-	local NewBaseObject = BaseObject.New(Root.Host)
+	local NewBaseObject = BaseObject.New(Root.Host and Root.Host:FindFirstAncestorWhichIsA("DockWidgetPluginGui"))
 
-	local Host = if Root.Parent
-			and Root.Parent.Host
-			and Root.Parent.Host:IsA("DockWidgetPluginGui")
-		then MousePlugin
-		else MouseScreenGui
+	local Host = if NewBaseObject.Host then MousePlugin else MouseScreenGui
 
 	local NewMouse = setmetatable(NewBaseObject, Host)
+
+	NewMouse.Root = Root
 
 	ProtectedObject.LayerInheritance(NewMouse, "InterfaceWorksMouse")
 
 	return NewMouse
 end
 
+function MouseShared:Destroy()
+	self.Root = nil
+	self:__Destroy()
+end
+
 --Plugin instruction set--
 
 function MousePlugin:GetLocation(): Vector2
-	local Dock: DockWidgetPluginGui = self.Host
+	local Dock = self.Host
 
 	return Dock:GetRelativeMousePosition()
 end

@@ -54,6 +54,52 @@ return {
 
 		return Worker.New(RenderUsage)
 	end,
+	[InputTypesEnums.RightClick] = function(
+		self: InterfaceWorksObject,
+		Callback: (self: InterfaceWorksObject) -> ...any
+	) -- No need for a seperate worker
+		self.Host.InputEnded:Connect(function(key)
+			if key.UserInputType == Enum.UserInputType.MouseButton2 then
+				Callback(self)
+			end
+		end)
+	end,
+	[InputTypesEnums.RightBeganClick] = function(
+		self: InterfaceWorksObject,
+		Callback: (self: InterfaceWorksObject) -> ...any
+	)
+		self.Host.InputBegan:Connect(function(key)
+			if key.UserInputType == Enum.UserInputType.MouseButton2 then
+				Callback(self)
+			end
+		end)
+	end,
+	[InputTypesEnums.RightDrag] = function(
+		self: InterfaceWorksObject,
+		Callback: (self: InterfaceWorksObject) -> ...any
+	) -- No need for a seperate worker
+		local CanDrag = false
+
+		self.Host.InputBegan:Connect(function(key)
+			if key.UserInputType == Enum.UserInputType.MouseButton2 then
+				CanDrag = true
+			end
+		end)
+
+		self.Host.InputEnded:Connect(function(key)
+			if key.UserInputType == Enum.UserInputType.MouseButton2 then
+				CanDrag = false
+			end
+		end)
+
+		local RenderUsage = RunService.RenderStepped:Connect(function()
+			if CanDrag then
+				Callback(self)
+			end
+		end)
+
+		return Worker.New(RenderUsage)
+	end,
 	[InputTypesEnums.Focus] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
 		if self.Host:IsA("TextBox") then
 			self.Host.Focused:Connect(function()

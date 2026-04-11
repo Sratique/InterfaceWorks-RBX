@@ -3,8 +3,8 @@ local Types = {}
 --CLASSES
 
 export type InterfaceWorksBase = {
-	__Destroy: () -> (),
-	__Remove: (index: number | string) -> (),
+	__Destroy: (self: InterfaceWorksBase) -> (),
+	__Remove: (self: InterfaceWorksBase, index: number | string) -> (),
 	IsA: (self: InterfaceWorksBase, ClassName: string) -> boolean,
 	GetChildren: (self: InterfaceWorksBase) -> { InterfaceWorksBase },
 	GetTreeRoot: (self: InterfaceWorksBase) -> InterfaceWorksRoot,
@@ -71,6 +71,7 @@ export type InterfaceWorksWorker = InterfaceWorksBase & {
 
 export type InterfaceWorksMouse = InterfaceWorksBase & {
 	GetLocation: (self: InterfaceWorksMouse) -> Vector2,
+	Root: InterfaceWorksRoot?,
 }
 
 --DATA TYPES
