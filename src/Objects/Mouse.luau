@@ -2,7 +2,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local types = require("@Root/types")
 type InterfaceWorksMouse = types.InterfaceWorksMouse
-type InterfaceWorksRoot = types.InterfaceWorksRoot
+type InterfaceWorksStroke = types.InterfaceWorksStroke
 
 local BaseObject = require("@BaseObject")
 
