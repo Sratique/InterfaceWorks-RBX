@@ -18,7 +18,7 @@ MouseScreenGui.__index = setmetatable(MouseScreenGui, MouseShared)
 local MousePlugin = {}
 MousePlugin.__index = setmetatable(MousePlugin, MouseShared)
 
-function MouseShared.New(Root: InterfaceWorksRoot): InterfaceWorksMouse
+function MouseShared.New(Root: InterfaceWorksStroke): InterfaceWorksMouse
 	local NewBaseObject = BaseObject.New(Root.Host and Root.Host:FindFirstAncestorWhichIsA("DockWidgetPluginGui"))
 
 	local Host = if NewBaseObject.Host then MousePlugin else MouseScreenGui
