@@ -9,7 +9,7 @@ export type InterfaceWorksBase = {
 	GetChildren: (self: InterfaceWorksBase) -> { InterfaceWorksBase },
 	GetTreeRoot: (self: InterfaceWorksBase) -> InterfaceWorksRoot,
 	Destroying: (self: InterfaceWorksBase, callback: () -> ()) -> (),
-	Insert: (self: InterfaceWorksBase, any, any) -> (),
+	Insert: (self: InterfaceWorksBase, Child: InterfaceWorksBase, ID: string | number) -> (),
 	Parent: InterfaceWorksBase?,
 	Host: Instance?,
 }

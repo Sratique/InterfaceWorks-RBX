@@ -7,6 +7,7 @@ type InterfaceWorksValue = types.InterfaceWorksValue
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
 type InterfaceWorksObject = types.InterfaceWorksObject
 type InterfaceWorksBase = types.InterfaceWorksBase
+type InterfaceWorksWorker = types.InterfaceWorksWorker
 type InterfaceWorksAnimationData = types.InterfaceWorksElementData
 
 local Stroke = require("@Objects/Stroke")
@@ -111,7 +112,7 @@ function HelperCompose(SourceObject: InterfaceWorksBase, Elements: { [string | n
 
 			for fndata: string, fn: (any) -> any in pairs(Element.Fs or {}) do
 				if InputTypes[fndata] then
-					local Worker = InputTypes[fndata](NewElementObject, fn)
+					local Worker: InterfaceWorksWorker? = InputTypes[fndata](NewElementObject, fn)
 
 					if Worker then
 						table.insert(NewElementObject.Workers, Worker)
