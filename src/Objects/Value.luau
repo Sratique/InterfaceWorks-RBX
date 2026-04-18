@@ -16,6 +16,7 @@ function Value.New(DefaultValue: number): InterfaceWorksValue
 	ProtectedObject.LayerInheritance(NewValue, "InterfaceWorksValue")
 
 	NewValue.ChangeFunctions = {}
+	NewValue.ID = 0
 
 	NewValue.Value = DefaultValue
 
@@ -27,6 +28,10 @@ function Value:OnChange(func: () -> ())
 end
 
 function Value:Set(NewValue: any)
+	if NewValue == self.Value then
+		return
+	end
+
 	self.Value = NewValue
 
 	for _, v: () -> () in pairs(self.ChangeFunctions) do

@@ -22,7 +22,7 @@ function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
 end
 
 function TreeRoot:Attach(Composition: _InterfaceWorksComposition, ID: string?)
-	Composer.Compose(Composition, function(ComposedStroke: InterfaceWorksStroke)
+	Composer.Main.Compose(Composition, function(ComposedStroke: InterfaceWorksStroke)
 		ComposedStroke.Host.Name = ID or "Main"
 
 		self:Insert(ComposedStroke, ID or "Main")

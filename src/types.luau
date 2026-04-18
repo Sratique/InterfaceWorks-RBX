@@ -31,6 +31,8 @@ export type InterfaceWorksStroke = InterfaceWorksBase & {
 	GetMouse: (self: InterfaceWorksStroke) -> InterfaceWorksMouse,
 	CurrentPosition: number,
 	Values: { number: any },
+	TotalValues: number,
+	ID: any,
 	RetracingComposition: _InterfaceWorksComposition,
 	CurrentComposition: { InterfaceWorksElement },
 	Host: Frame,
@@ -39,6 +41,7 @@ export type InterfaceWorksStroke = InterfaceWorksBase & {
 export type InterfaceWorksValue = InterfaceWorksBase & {
 
 	Value: any,
+	ID: number,
 	OnChange: (self: InterfaceWorksValue, () -> ()) -> (),
 	Set: (self: InterfaceWorksValue, any) -> (),
 	Destroy: (self: InterfaceWorksValue, any) -> (),
@@ -72,6 +75,25 @@ export type InterfaceWorksWorker = InterfaceWorksBase & {
 export type InterfaceWorksMouse = InterfaceWorksBase & {
 	GetLocation: (self: InterfaceWorksMouse) -> Vector2,
 	Root: InterfaceWorksRoot?,
+}
+
+--INTERNAL CLASSES
+
+export type InterfaceWorksJob = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksJob) -> (),
+	Pause: (self: InterfaceWorksJob) -> (),
+	SetArgs: (self: InterfaceWorksJob, ...any) -> (),
+	GetArtifact: (self: InterfaceWorksJob) -> ...any,
+	Finished: (self: InterfaceWorksJob, callback: () -> ()) -> (),
+	Run: (self: InterfaceWorksJob, ...any) -> (),
+}
+
+export type InterfaceWorksTicket = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksTicket) -> (),
+	Job: () -> (),
+	ID: string,
 }
 
 --DATA TYPES
@@ -109,6 +131,8 @@ export type InterfaceWorksAnimationData = {
 }
 
 export type InterfaceWorksInputType = number
+export type InterfaceWorksValueID = number
+export type InterfaceWorksTicketType = "Compose" | "Recompose" | "Fragment"
 export type _InterfaceWorksComposition = (...any) -> { InterfaceWorksElement }
 
 return Types
