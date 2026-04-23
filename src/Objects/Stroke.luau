@@ -12,10 +12,13 @@ local Mouse = require("./Mouse")
 local Stroke = {}
 Stroke.__index = setmetatable(Stroke, BaseObject)
 
-function Stroke.New(Composition: _InterfaceWorksComposition): InterfaceWorksStroke
-	local VirtualHost = Instance.new("Frame")
-	VirtualHost.Size = UDim2.fromScale(1, 1)
-	VirtualHost.BackgroundTransparency = 1
+function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse: Instance?): InterfaceWorksStroke
+	local VirtualHost = Reuse or Instance.new("Frame")
+	if not Reuse then
+		VirtualHost.Size = UDim2.fromScale(1, 1)
+		VirtualHost.BackgroundTransparency = 1
+		VirtualHost.Name = ID or "Stroke"
+	end
 
 	local NewBaseObject = BaseObject.New(VirtualHost)
 

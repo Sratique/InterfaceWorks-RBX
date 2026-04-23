@@ -6,13 +6,17 @@ local BaseObject = require("@BaseObject")
 local TicketObject = {}
 TicketObject.__index = setmetatable(TicketObject, BaseObject)
 
-function TicketObject.New(ID: string, Job: () -> ()): InterfaceWorksTicket
+function TicketObject.New(ID: string?, Job: (self: InterfaceWorksTicket) -> ()): InterfaceWorksTicket
 	local NewBaseObject = BaseObject.New()
 
 	local NewTicketObject = setmetatable(NewBaseObject, TicketObject)
 
-	NewTicketObject.Job = Job
+	NewTicketObject.Job = function()
+		Job(NewTicketObject)
+	end
 	NewTicketObject.ID = ID
+
+	NewTicketObject.Environment = {}
 
 	return NewTicketObject
 end

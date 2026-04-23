@@ -9,37 +9,45 @@ ComposerTickets.CurrentTicket = nil
 ComposerTickets.Queue = {}
 ComposerTickets.Parallel = {}
 
-function ComposerTickets.New(Type: InterfaceWorksTicketType, ID: string, callback: () -> ())
+--[[
+
+Returns a ticket and a boolean which is true if the returned ticket was already in the queue or was already being rendered
+
+]]
+function ComposerTickets.New(
+	Type: InterfaceWorksTicketType,
+	ID: string?,
+	callback: (self: InterfaceWorksTicket) -> ()
+): (InterfaceWorksTicket, boolean)
+	local ExistingTicket: InterfaceWorksTicket? = ComposerTickets.CurrentTicket
+	if ExistingTicket and ExistingTicket.ID ~= nil and ExistingTicket.ID == ID then
+		return ExistingTicket, true
+	end
+
 	for _, v in pairs(ComposerTickets.Queue) do
 		if v.ID == ID then
-			return
+			return v, true
 		end
 	end
 
-	local ExistingTicket: InterfaceWorksTicket? = ComposerTickets.CurrentTicket
-	if ExistingTicket and ExistingTicket.ID == ID then
-		ExistingTicket.Job()
-		return
-	end
-
-	if ComposerTickets.Parallel[ID] then
-		ComposerTickets.Parallel[ID].Job()
-		return
+	local ExistingParallel: InterfaceWorksTicket? = ComposerTickets.Parallel[ID]
+	if ExistingParallel then
+		return ExistingParallel, true
 	end
 
 	local CurrentTicket = Ticket.New(ID, callback)
 
-	if #ComposerTickets.Queue == 0 then
-		ComposerTickets.CurrentTicket = CurrentTicket
-		CurrentTicket.Job()
-		return
-	end
-
-	if Type == "Recompose" or Type == "Fragment" then
+	if Type == "Recompose" then
 		table.insert(ComposerTickets.Queue, CurrentTicket)
 	elseif Type == "Compose" then
 		table.insert(ComposerTickets.Queue, 1, CurrentTicket)
+	else
+		warn("Unknown composer type")
 	end
+	if #ComposerTickets.Queue == 1 and not ComposerTickets.CurrentTicket then
+		ComposerTickets.Next()
+	end
+	return CurrentTicket, false
 end
 
 function ComposerTickets.SetParallel()
@@ -58,12 +66,14 @@ function ComposerTickets.InvalidateParallel(TicketID: string)
 end
 
 function ComposerTickets.Invalidate()
-	ComposerTickets.CurrentTicket:Destroy()
+	local TempTicket = ComposerTickets.CurrentTicket
 	ComposerTickets.CurrentTicket = nil
 
 	if #ComposerTickets.Queue > 0 then
 		ComposerTickets.Next()
 	end
+
+	TempTicket:Destroy()
 end
 
 function ComposerTickets.Next()

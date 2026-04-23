@@ -1,5 +1,3 @@
-local TweenService = game:GetService("TweenService")
-
 local types = require("@Root/types")
 type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksElement = types.InterfaceWorksElement
@@ -9,163 +7,82 @@ type InterfaceWorksObject = types.InterfaceWorksObject
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
 
 local ComposerRoot = {}
-ComposerRoot.CurrentComposition = nil
 
 local Tickets = require("@Root/Internal/Composer/Tickets")
-local Jobs = require("@Root/Internal/Composer/Jobs")
-local InputTypes = require("@Root/Internal/InputTypesFunctions")
+local Scheduler = require("./Scheduler")
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local RootProperties = ProtectedObject.GetProxy("RootProperties")
-
-local Stroke = require("@Objects/Stroke")
-local Object = require("@Objects/Object")
 
 function ComposerRoot.Compose(
 	Composition: _InterfaceWorksComposition,
 	callback: (InterfaceWorksStroke) -> ()?,
-	Arguments: { any }?,
-	IsFragment: boolean?
+	ID: string?
 )
-	local Countdown = os.clock()
+	debug.setmemorycategory("Composer_New:TYPE(StrokeObject)")
 
-	local NewStroke = Stroke.New(Composition)
-	local StrokeID = tostring(NewStroke.ID)
+	local Ticket, Existing = Tickets.New("Compose", ID, function(self)
+		local ComposeJob = Scheduler.Compose_Create(Composition)
 
-	local ComposeJob = Jobs.CreateJob(function(Environment: {}, NewBuild: { InterfaceWorksElement })
-		if NewBuild == nil then
-			error("Composition does not exist. Are you sure you are returning the composition?")
-		end
+		ComposeJob:Finished(function()
+			local NewStroke = ComposeJob.Environment.Stroke
 
-		local Children = {}
-		local Pointer = 0
+			NewStroke[RootProperties].Init = true
+			Tickets.Invalidate()
+			ComposeJob:Destroy()
+			if callback then
+				debug.setmemorycategory("Composer_Callback:TYPE(Stroke")
+				callback(NewStroke)
+			end
+		end)
 
-		for name, element in pairs(NewBuild) do
-			table.insert(Children, {
-				["Name"] = name,
-				["Element"] = element,
-				["Parent"] = NewStroke,
-			})
-		end
+		self.Environment.Job = ComposeJob
 
-		while Pointer ~= #Children do
-			Pointer += 1
+		debug.setmemorycategory("Composer_Create:TYPE(Stroke)")
+		ComposeJob:Run()
+	end)
 
-			local ElementContainer = Children[Pointer]
-			local Element = ElementContainer.Element
-			local ElementName = ElementContainer.Name
-			local SourceObject = ElementContainer.Parent
+	if Existing then
+		Ticket:Destroying(function()
+			if Ticket.Environment.Job then
+				local Dirty: Instance = Ticket.Environment.Job.Environment.Stroke.Host:Clone()
+				warn("Cloned ticket artefact. Reusing dirty hosts.")
+				Tickets.New("Compose", nil, function()
+					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty)
 
-			if Element.Type == "Fragment" then
-				if not Element.Composition then
-					continue
-				end
-				ComposerRoot.Compose(Element.Composition, function(NewFragment: InterfaceWorksStroke)
-					NewFragment.Host.Name = ElementName
-					SourceObject:Insert(NewFragment, ElementName)
-				end, Element.FragmentArguments, true)
-			elseif Element.Type == "Property" then
-				local HeadlessHost = Instance.new(Element.ID)
-				for prop: string, val: any in pairs(Element.Ps or {}) do
-					HeadlessHost[prop] = val
-				end
-				HeadlessHost.Parent = SourceObject.Host
-			else
-				local Host: any = Instance.new(Element.ID)
-				Host.Name = ElementName
+					DirtyComposeJob:Finished(function()
+						Tickets.Invalidate()
 
-				for prop: string, val: any in pairs(Element.Ps or {}) do
-					Host[prop] = val
-				end
+						local NewStroke = DirtyComposeJob.Environment.Stroke
 
-				local NewElementObject: InterfaceWorksObject = Object.New(Host)
-				SourceObject:Insert(NewElementObject, ElementName)
-
-				for fndata: string, fn: (any) -> any in pairs(Element.Fs or {}) do
-					if InputTypes[fndata] then
-						local Worker: InterfaceWorksWorker? = InputTypes[fndata](NewElementObject, fn)
-
-						if Worker then
-							table.insert(NewElementObject.Workers, Worker)
+						NewStroke[RootProperties].Init = true
+						DirtyComposeJob:Destroy()
+						if callback then
+							debug.setmemorycategory("Composer_Callback:TYPE(Stroke")
+							callback(NewStroke)
 						end
-						continue
-					end
-					NewElementObject[fndata] = function()
-						fn(NewElementObject)
-					end
-				end
-
-				if Element.Mt then
-					Element.Mt:AddTarget(NewElementObject)
-				end
-				if Element.An then
-					local AD = Element.An
-
-					if AD.BeginningPoint then
-						for prop, data in pairs(AD.BeginningPoint) do
-							Host[prop] = data
-						end
-					end
-
-					local Tween = TweenService:Create(Host, AD.TI, AD.Goals)
-
-					table.insert(NewElementObject.Animations, Tween)
-
-					Tween.Completed:Connect(function()
-						table.remove(NewElementObject.Animations, table.find(NewElementObject.Animations, Tween))
-						Tween:Destroy()
 					end)
 
-					Tween:Play()
-				end
-				if Element.Cn then
-					for name, element in pairs(Element.Cn) do
-						table.insert(Children, {
-							["Name"] = name,
-							["Element"] = element,
-							["Parent"] = NewElementObject,
-						})
-					end
-				end
+					debug.setmemorycategory("Composer_Create:TYPE(Stroke)")
+					DirtyComposeJob:Run()
+				end)
 			end
-		end
-	end)
-
-	ComposeJob:Finished(function()
-		print("Finished stroke! (" .. os.clock() - Countdown .. " ms)")
-		print(NewStroke)
-		NewStroke[RootProperties].Init = true
-		ComposeJob:Destroy()
-		Tickets.Invalidate()
-	end)
-
-	Tickets.New(if IsFragment then "Fragment" else "Compose", StrokeID, function()
-		ComposerRoot.CurrentComposition = NewStroke
-
-		local NewBuild = Composition(unpack(Arguments or {}))
-		NewStroke.CurrentComposition = NewBuild
-
-		ComposeJob:Run(NewBuild)
-	end)
-
-	if callback then
-		callback(NewStroke)
+		end)
 	end
 end
 
 function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: InterfaceWorksValueID, Arguments: { any }?)
-	local StrokeID = tostring(Stroke.ID)
+	--[[local StrokeID = tostring(Stroke.ID)]]
 
-	local ReComposeJob = Jobs.CreateJob(function(Environment: { [any]: any }, NewBuild)
-    
-        
-    
-    end)
+	--[[local DiffJob = Jobs.CreateJob(function(Environment: { [any]: any }, NewBuild, OldBuild)
+		if Environment.Changes then
+		else
+			Environment.Changes = {}
+		end
+	end)]]
 
-	Tickets.New("Recompose", StrokeID .. Initiator, function()
-    
-        
-    
-    end)
+	--[[Tickets.New("Recompose", StrokeID .. Initiator, function()
+		DiffJob:Run()
+	end)]]
 end
 
 return ComposerRoot

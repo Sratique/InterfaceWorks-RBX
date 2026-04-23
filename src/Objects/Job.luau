@@ -17,15 +17,6 @@ function JobObject.New(Function: (Environment: { [any]: any }, ...any) -> ()): I
 	NewJobObject.Arguments = {}
 
 	NewJobObject.Init = false
-	NewJobObject.IsRunning = false
-
-	NewJobObject.Coro = coroutine.create(function()
-		NewJobObject.Function(NewJobObject.Environment, unpack(NewJobObject.Arguments))
-		for _, v in pairs(NewJobObject.FinishedConnections) do
-			v()
-		end
-		NewJobObject.IsRunning = false
-	end)
 
 	return NewJobObject
 end
@@ -34,23 +25,27 @@ function JobObject:SetArgs(...: any)
 	self.Arguments = { ... }
 end
 
+function JobObject:SetEnv(Env: { [any]: any })
+	self.Environment = Env
+end
+
 function JobObject:GetArtifact()
 	return self.Environment
 end
 
 function JobObject:Run(...: any)
-	if self.IsRunning then
-		return
-	end
-
 	if select("#", ...) > 0 then
 		self:SetArgs(...)
 	end
 
 	self.Init = true
-	self.IsRunning = true
 
-	task.spawn(self.Coro)
+	task.spawn(coroutine.create(function()
+		self.Function(self.Environment, unpack(self.Arguments))
+		for _, v in pairs(self.FinishedConnections) do
+			v()
+		end
+	end))
 end
 
 function JobObject:Finished(callback: () -> ())

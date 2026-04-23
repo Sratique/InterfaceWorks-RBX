@@ -1,5 +1,12 @@
-if not game:GetService("RunService"):IsStudio() then
-	warn("Running InterfaceWorks version: " .. _G.VERSION .. "@" .. _G.CHANNEL)
+if game:GetService("RunService"):IsRunning() or game:GetService("RunService"):IsServer() then
+	warn(
+		"Running InterfaceWorks version: "
+			.. _G.VERSION
+			.. "@"
+			.. _G.CHANNEL
+			.. " on interpreter version: "
+			.. version()
+	)
 end
 
 local types = require("@Root/types")
