@@ -5,6 +5,7 @@ type InterfaceWorksValueID = types.InterfaceWorksValueID
 type InterfaceWorksWorker = types.InterfaceWorksWorker
 type InterfaceWorksObject = types.InterfaceWorksObject
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksJob = types.InterfaceWorksJob
 
 local ComposerRoot = {}
 
@@ -43,9 +44,14 @@ function ComposerRoot.Compose(
 
 	if Existing then
 		Ticket:Destroying(function()
-			if Ticket.Environment.Job then
-				local Dirty: Instance = Ticket.Environment.Job.Environment.Stroke.Host:Clone()
-				warn("Cloned ticket artefact. Reusing dirty hosts.")
+			local InitJob: InterfaceWorksJob = Ticket.Environment.Job
+			if InitJob then
+				local Stroke: InterfaceWorksStroke? = InitJob.Environment.Stroke
+				if not Stroke then
+					warn("Corrupted ticket. - InterfaceWorks:Root")
+					return
+				end
+				local Dirty: Instance = Stroke.Host:Clone()
 				Tickets.New("Compose", nil, function()
 					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty)
 

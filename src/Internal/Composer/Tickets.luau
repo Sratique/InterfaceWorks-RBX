@@ -42,7 +42,7 @@ function ComposerTickets.New(
 	elseif Type == "Compose" then
 		table.insert(ComposerTickets.Queue, 1, CurrentTicket)
 	else
-		warn("Unknown composer type")
+		warn("Unknown composer type - InterfaceWorks:Tickets")
 	end
 	if #ComposerTickets.Queue == 1 and not ComposerTickets.CurrentTicket then
 		ComposerTickets.Next()

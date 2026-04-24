@@ -38,9 +38,13 @@ function JobObject:Run(...: any)
 		self:SetArgs(...)
 	end
 
+	if self.Current then
+		coroutine.close(self.Current)
+	end
+
 	self.Init = true
 
-	task.spawn(coroutine.create(function()
+	self.Current = task.spawn(coroutine.create(function()
 		self.Function(self.Environment, unpack(self.Arguments))
 		for _, v in pairs(self.FinishedConnections) do
 			v()

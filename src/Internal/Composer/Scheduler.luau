@@ -22,6 +22,8 @@ local function CreateStroke(Render, Reuse): (InterfaceWorksStroke, { InterfaceWo
 
 	local NewStroke = Stroke.New(CurrentComposition, Render.ID, Reuse)
 
+	ComposerScheduler.CurrentComposition = NewStroke
+
 	local NewBuild = CurrentComposition(unpack(Render.Arguments))
 	NewStroke.CurrentComposition = NewBuild
 
@@ -42,8 +44,6 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 		}
 		for _, Render in pairs(RenderQueue) do
 			local NewStroke, NewBuild = CreateStroke(Render)
-
-			ComposerScheduler.CurrentComposition = NewStroke
 
 			if Render.Parent then
 				Render.Parent:Insert(NewStroke, Render.ID)
@@ -166,8 +166,6 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 		for _, Render in pairs(RenderQueue) do
 			local NewStroke, NewBuild = CreateStroke(Render, Render.Reuse)
 
-			ComposerScheduler.CurrentComposition = NewStroke
-
 			if Render.Parent then
 				Render.Parent:Insert(NewStroke, Render.ID)
 			else
@@ -265,5 +263,7 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 		print("Finished stroke (Dirty)! (" .. os.clock() - Countdown .. " ms)")
 	end)
 end
+
+function ComposerScheduler.ReCompose(Stroke: InterfaceWorksStroke) end
 
 return ComposerScheduler

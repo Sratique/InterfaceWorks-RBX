@@ -92,6 +92,7 @@ export type InterfaceWorksJob = InterfaceWorksBase & {
 	Finished: (self: InterfaceWorksJob, callback: () -> ()) -> (),
 	Run: (self: InterfaceWorksJob, ...any) -> (),
 	Environment: { [any]: any },
+	Current: thread?,
 }
 
 export type InterfaceWorksTicket = InterfaceWorksBase & {
