@@ -10,6 +10,7 @@ type _InterfaceWorksComposition = types._InterfaceWorksComposition
 type InterfaceWorksRenderingSchedule = types.InterfaceWorksRenderingSchedule
 
 local ComposerScheduler = {}
+ComposerScheduler._VERSION = _G.SchedulerVersion
 
 local Jobs = require("@Root/Internal/Composer/Jobs")
 local InputTypes = require("@Root/Internal/InputTypesFunctions")
@@ -32,7 +33,6 @@ end
 
 function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksComposition)
 	return Jobs.CreateJob(function(Environment)
-		local Countdown = os.clock()
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
 				["Parent"] = nil,
@@ -146,13 +146,11 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 			end
 		end
 		ComposerScheduler.CurrentComposition = nil
-		print("Finished stroke! (" .. os.clock() - Countdown .. " ms)")
 	end)
 end
 
 function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksComposition, Reuse: Instance)
 	return Jobs.CreateJob(function(Environment)
-		local Countdown = os.clock()
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
 				["Parent"] = nil,
@@ -260,7 +258,6 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 			end
 		end
 		ComposerScheduler.CurrentComposition = nil
-		print("Finished stroke (Dirty)! (" .. os.clock() - Countdown .. " ms)")
 	end)
 end
 

@@ -1,12 +1,58 @@
 if game:GetService("RunService"):IsRunning() or game:GetService("RunService"):IsServer() then
 	warn(
-		"Running InterfaceWorks version: "
+		"Running InterfaceWorks (combined) version: "
 			.. _G.VERSION
 			.. "@"
 			.. _G.CHANNEL
 			.. " on interpreter version: "
 			.. version()
 	)
+end
+
+if _G.InterfaceWorksDebug then
+	local SpecificVersion = string.split(version(), ".")
+
+	local ShellGeneration = SpecificVersion[1]
+	local ReleaseVer = SpecificVersion[2]
+	local PatchNmbr = SpecificVersion[3]
+	local CommitID = SpecificVersion[4]
+
+	local Scheduler = require("@Root/Internal/Composer/Scheduler")
+	local Jobs = require("@Root/Internal/Composer/Jobs")
+	local Tickets = require("@Root/Internal/Composer/Tickets")
+
+	warn(
+		"Debugging info: \n"
+			.. "----------------------[ROBLOX CLIENT INFO]----------------------\n"
+			.. "Shell generation: "
+			.. ShellGeneration
+			.. "\n"
+			.. "ReleaseVer: "
+			.. ReleaseVer
+			.. "\n"
+			.. "Patch number: "
+			.. PatchNmbr
+			.. "\n"
+			.. "Internal Commit ID: "
+			.. CommitID
+			.. "\n"
+			.. "---------------------[InterfaceWorks INFO]----------------------\n"
+			.. "Launched in: "
+			.. elapsedTime()
+			.. " seconds from Client start.\n"
+			.. "Scheduler version: "
+			.. Scheduler._VERSION
+			.. "\n"
+			.. "Jobs version: "
+			.. Jobs._VERSION
+			.. "\n"
+			.. "Tickets version: "
+			.. Tickets._VERSION
+	)
+
+	if _G.InterfaceWorksDebuggerKernel then
+		_G.InterfaceWorksDebugggerKernel:CanInit(script)
+	end
 end
 
 local types = require("@Root/types")

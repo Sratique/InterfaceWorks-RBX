@@ -2,12 +2,13 @@ local types = require("@Root/types")
 type InterfaceWorksTicketType = types.InterfaceWorksTicketType
 type InterfaceWorksTicket = types.InterfaceWorksTicket
 
-local Ticket = require("@Objects/Ticket")
-
 local ComposerTickets = {}
+ComposerTickets._VERSION = _G.TicketsVersion
 ComposerTickets.CurrentTicket = nil
 ComposerTickets.Queue = {}
 ComposerTickets.Parallel = {}
+
+local Ticket = require("@Objects/Ticket")
 
 --[[
 
