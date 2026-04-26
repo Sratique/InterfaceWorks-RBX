@@ -94,15 +94,11 @@ function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: Interfa
 
 	local DiffJob = Scheduler.ReCompose(Stroke)
 
-	Stroke:MaxPointer(function()
-		print("Parallelizing")
-		Tickets.SetParallel()
-	end)
-
 	Tickets.New("Recompose", TicketID, function(self)
+		Stroke:MaxPointer(function()
+			Tickets.SetParallel()
+		end)
 		DiffJob:Finished(function()
-			print("INVALIDATINGPARALLEL")
-			print(self.ID)
 			Tickets.InvalidateParallel(self.ID)
 			DiffJob:Destroy()
 		end)

@@ -343,6 +343,8 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 					end
 				end
 			end
+
+			Stroke.CurrentComposition = NewBuild
 		end
 		print(os.clock() - t)
 	end)
