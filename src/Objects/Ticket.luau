@@ -11,10 +11,11 @@ function TicketObject.New(ID: string?, Job: (self: InterfaceWorksTicket) -> ()):
 
 	local NewTicketObject = setmetatable(NewBaseObject, TicketObject)
 
+	NewTicketObject.ID = ID
+
 	NewTicketObject.Job = function()
 		Job(NewTicketObject)
 	end
-	NewTicketObject.ID = ID
 
 	NewTicketObject.Environment = {}
 

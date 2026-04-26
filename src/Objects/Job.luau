@@ -39,6 +39,7 @@ function JobObject:Run(...: any)
 	end
 
 	if self.Current then
+		table.clear(self.FinishedConnections)
 		coroutine.close(self.Current)
 	end
 

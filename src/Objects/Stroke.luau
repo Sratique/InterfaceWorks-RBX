@@ -49,8 +49,9 @@ end
 function Stroke:AdvancePosition()
 	self.CurrentPosition += 1
 	if self[RootProperties].Init and self.CurrentPosition == self.TotalValues then
-		for _, v in pairs(self[RootProperties].MaxPointerConnections) do
+		for i, v in pairs(self[RootProperties].MaxPointerConnections) do
 			v()
+			self[RootProperties].MaxPointerConnections[i] = nil
 		end
 	end
 end

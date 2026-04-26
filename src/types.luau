@@ -32,6 +32,7 @@ export type InterfaceWorksStroke = InterfaceWorksBase & {
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
 	Destroy: (self: InterfaceWorksStroke) -> (),
 	GetMouse: (self: InterfaceWorksStroke) -> InterfaceWorksMouse,
+	MaxPointer: (self: InterfaceWorksStroke, callback: (any) -> any) -> (),
 	CurrentPosition: number,
 	Values: { number: any },
 	TotalValues: number,

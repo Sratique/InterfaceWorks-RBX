@@ -39,7 +39,7 @@ if _G.InterfaceWorksDebug then
 			.. "---------------------[InterfaceWorks INFO]----------------------\n"
 			.. "Launched in: "
 			.. elapsedTime()
-			.. " seconds from Client start.\n"
+			.. " seconds from *Client* start.\n"
 			.. "Scheduler version: "
 			.. Scheduler._VERSION
 			.. "\n"
@@ -51,7 +51,7 @@ if _G.InterfaceWorksDebug then
 	)
 
 	if _G.InterfaceWorksDebuggerKernel then
-		_G.InterfaceWorksDebugggerKernel:CanInit(script)
+		_G.InterfaceWorksDebuggerKernel:CanInit(script)
 	end
 end
 

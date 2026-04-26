@@ -15,13 +15,13 @@ ComposerScheduler._VERSION = _G.SchedulerVersion
 local Jobs = require("@Root/Internal/Composer/Jobs")
 local InputTypes = require("@Root/Internal/InputTypesFunctions")
 
-local Stroke = require("@Objects/Stroke")
+local StrokeObject = require("@Objects/Stroke")
 local Object = require("@Objects/Object")
 
 local function CreateStroke(Render, Reuse): (InterfaceWorksStroke, { InterfaceWorksElement })
 	local CurrentComposition = Render.Composition
 
-	local NewStroke = Stroke.New(CurrentComposition, Render.ID, Reuse)
+	local NewStroke = StrokeObject.New(CurrentComposition, Render.ID, Reuse)
 
 	ComposerScheduler.CurrentComposition = NewStroke
 
@@ -191,7 +191,11 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 				local SourceObject = ElementContainer.Parent
 				local SourceInstance = ElementContainer.ParentInstance
 
-				local DirtyHost = SourceInstance:FindFirstChild(ElementName)
+				local DirtyHost: GuiObject? = SourceInstance[ElementName]
+
+				if not DirtyHost then
+					continue
+				end
 
 				if Element.Type == "Object" then
 					local NewElementObject: InterfaceWorksObject = Object.New(DirtyHost)
@@ -261,6 +265,87 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 	end)
 end
 
-function ComposerScheduler.ReCompose(Stroke: InterfaceWorksStroke) end
+local function CompareChildren(
+	Old: { InterfaceWorksElement },
+	New: { InterfaceWorksElement },
+	Parent: InterfaceWorksObject,
+	AddTo: {
+		[number]: { Old: InterfaceWorksElement, New: InterfaceWorksElement, Object: InterfaceWorksObject },
+	}?
+)
+	local temp = AddTo or {}
+
+	for i: number, d in pairs(Old) do
+		if New[i] == nil then
+			local OldInstance: any = Parent[i]
+			OldInstance:Destroy()
+		else
+			table.insert(temp, {
+				["Old"] = d,
+				["New"] = New[i],
+				["Object"] = Parent[i],
+			})
+		end
+	end
+	if not AddTo then
+		return temp
+	end
+	return
+end
+
+function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
+	debug.setmemorycategory("Scheduler_ChildrenTable:CREATE")
+
+	return Jobs.CreateJob(function(Environment: { [string]: { any } })
+		local t = os.clock()
+		local Strokes = { Init }
+		for _, Stroke in Strokes do
+			ComposerScheduler.CurrentComposition = Stroke
+
+			Stroke:ResetPosition()
+
+			local OldBuild = Environment.Last or Stroke.CurrentComposition
+			local NewBuild = Stroke.RetracingComposition()
+			Environment.Last = NewBuild
+
+			local Children: { { Object: InterfaceWorksObject, New: InterfaceWorksElement, Old: InterfaceWorksElement } } =
+				CompareChildren(OldBuild, NewBuild, Stroke)
+			local Pointer = 0
+
+			Environment.Changes = Environment.Changes or {}
+			for Path, v in pairs(Environment.Changes) do
+			end
+
+			while #Children ~= Pointer do
+				Pointer += 1
+
+				local CurrentStruct = Children[Pointer]
+				local CurrentElement = CurrentStruct.New
+				local OldElement = CurrentStruct.Old
+
+				local ElementObject = CurrentStruct.Object
+				local ElementInstance = ElementObject.Host
+
+				if CurrentElement.Type == "Object" then
+					for prop, val in CurrentElement.Ps do
+						if OldElement.Ps[prop] ~= val then
+							ElementInstance[prop] = val
+						end
+					end
+
+					CompareChildren(OldElement.Cn, CurrentElement.Cn, ElementObject, Children)
+				elseif CurrentElement.Type == "Fragment" then
+					for dt, val in CurrentElement.FragmentArguments do
+						if OldElement.FragmentArguments[dt] ~= val then
+							table.insert(Strokes, ElementObject)
+							break
+						end
+					end
+				end
+			end
+		end
+		print(os.clock() - t)
+	end)
+end
 
 return ComposerScheduler

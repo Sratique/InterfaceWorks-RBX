@@ -51,6 +51,33 @@ function ComposerTickets.New(
 	return CurrentTicket, false
 end
 
+function ComposerTickets.ExistsParallel(ID: string): (InterfaceWorksTicket?, boolean)
+	local ExistingParallel: InterfaceWorksTicket? = ComposerTickets.Parallel[ID]
+	if ExistingParallel then
+		return ExistingParallel, true
+	end
+	return nil, false
+end
+
+function ComposerTickets.ExistsQueue(ID: string): (InterfaceWorksTicket?, boolean)
+	local ExistingTicket: InterfaceWorksTicket? = ComposerTickets.CurrentTicket
+	if ExistingTicket and ExistingTicket.ID ~= nil and ExistingTicket.ID == ID then
+		return ExistingTicket, true
+	end
+
+	for _, v in pairs(ComposerTickets.Queue) do
+		if v.ID == ID then
+			return v, true
+		end
+	end
+	return nil, false
+end
+
+function ComposerTickets.Reintroduce(CurrentTicket)
+	ComposerTickets.Parallel[CurrentTicket.ID] = nil
+	table.insert(ComposerTickets.Queue, 1, CurrentTicket)
+end
+
 function ComposerTickets.SetParallel()
 	ComposerTickets.Parallel[ComposerTickets.CurrentTicket.ID] = ComposerTickets.CurrentTicket
 

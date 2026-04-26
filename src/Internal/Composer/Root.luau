@@ -77,18 +77,37 @@ function ComposerRoot.Compose(
 end
 
 function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: InterfaceWorksValueID, Arguments: { any }?)
-	--[[local StrokeID = tostring(Stroke.ID)]]
+	local StrokeID = tostring(Stroke.ID)
+	local TicketID = StrokeID .. Initiator
 
-	--[[local DiffJob = Jobs.CreateJob(function(Environment: { [any]: any }, NewBuild, OldBuild)
-		if Environment.Changes then
-		else
-			Environment.Changes = {}
-		end
-	end)]]
+	local _, Exists = Tickets.ExistsQueue(TicketID)
 
-	--[[Tickets.New("Recompose", StrokeID .. Initiator, function()
+	if Exists then
+		return
+	end
+
+	local ParallelTicket, ExistsParallel = Tickets.ExistsParallel(TicketID)
+
+	if ExistsParallel then
+		Tickets.Reintroduce(ParallelTicket)
+	end
+
+	local DiffJob = Scheduler.ReCompose(Stroke)
+
+	Stroke:MaxPointer(function()
+		print("Parallelizing")
+		Tickets.SetParallel()
+	end)
+
+	Tickets.New("Recompose", TicketID, function(self)
+		DiffJob:Finished(function()
+			print("INVALIDATINGPARALLEL")
+			print(self.ID)
+			Tickets.InvalidateParallel(self.ID)
+			DiffJob:Destroy()
+		end)
 		DiffJob:Run()
-	end)]]
+	end)
 end
 
 return ComposerRoot
