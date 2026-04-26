@@ -86,7 +86,6 @@ export type InterfaceWorksMouse = InterfaceWorksBase & {
 export type InterfaceWorksJob = InterfaceWorksBase & {
 
 	Destroy: (self: InterfaceWorksJob) -> (),
-	Pause: (self: InterfaceWorksJob) -> (),
 	SetArgs: (self: InterfaceWorksJob, ...any) -> (),
 	SetEnv: (self: InterfaceWorksJob, Env: { [any]: any }) -> (),
 	GetArtifact: (self: InterfaceWorksJob) -> ...any,
