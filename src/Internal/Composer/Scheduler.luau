@@ -14,6 +14,9 @@ ComposerScheduler._VERSION = _G.SchedulerVersion
 
 local Jobs = require("@Root/Internal/Composer/Jobs")
 local InputTypes = require("@Root/Internal/InputTypesFunctions")
+local InputTypesEnums = require("@Root/Public/InputTypesEnums")
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
+local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 local StrokeObject = require("@Objects/Stroke")
 local Object = require("@Objects/Object")
@@ -51,22 +54,21 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 				Environment.Stroke = NewStroke
 			end
 
-			local Children = {}
+			local Children: { InterfaceWorksElement & { Parent: InterfaceWorksObject | InterfaceWorksStroke, Name: string } } =
+				{}
 			local ChildrenPointer = 0
 
 			for name, element in pairs(NewBuild) do
-				table.insert(Children, {
-					["Name"] = name,
-					["Element"] = element,
-					["Parent"] = NewStroke,
-				})
+				element["Name"] = name
+				element["Parent"] = NewStroke
+				table.insert(Children, element)
 			end
 
 			while ChildrenPointer ~= #Children do
 				ChildrenPointer += 1
 
 				local ElementContainer = Children[ChildrenPointer]
-				local Element = ElementContainer.Element
+				local Element = ElementContainer
 				local ElementName = ElementContainer.Name
 				local SourceObject = ElementContainer.Parent
 
@@ -95,12 +97,10 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 						end
 					end
 
-					for name: string | number, element: InterfaceWorksElement in pairs(Element.Cn) do
-						table.insert(Children, {
-							["Name"] = name,
-							["Element"] = element,
-							["Parent"] = NewElementObject,
-						})
+					for name: string | number, ChildElement in pairs(Element.Cn) do
+						ChildElement["Parent"] = NewElementObject
+						ChildElement["Name"] = name
+						table.insert(Children, ChildElement)
 					end
 
 					if Element.Mt then
@@ -144,6 +144,8 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 					})
 				end
 			end
+			--Set stroke state to init=true
+			NewStroke[RootProperties].Init = true
 		end
 		ComposerScheduler.CurrentComposition = nil
 	end)
@@ -260,37 +262,11 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 					})
 				end
 			end
+			--Set stroke state to init=true
+			NewStroke[RootProperties].Init = true
 		end
 		ComposerScheduler.CurrentComposition = nil
 	end)
-end
-
-local function CompareChildren(
-	Old: { InterfaceWorksElement },
-	New: { InterfaceWorksElement },
-	Parent: InterfaceWorksObject,
-	AddTo: {
-		[number]: { Old: InterfaceWorksElement, New: InterfaceWorksElement, Object: InterfaceWorksObject },
-	}?
-)
-	local temp = AddTo or {}
-
-	for i: number, d in pairs(Old) do
-		if New[i] == nil then
-			local OldInstance: any = Parent[i]
-			OldInstance:Destroy()
-		else
-			table.insert(temp, {
-				["Old"] = d,
-				["New"] = New[i],
-				["Object"] = Parent[i],
-			})
-		end
-	end
-	if not AddTo then
-		return temp
-	end
-	return
 end
 
 function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
@@ -308,32 +284,80 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 			local NewBuild = Stroke.RetracingComposition()
 			Environment.Last = NewBuild
 
-			local Children: { { Object: InterfaceWorksObject, New: InterfaceWorksElement, Old: InterfaceWorksElement } } =
-				CompareChildren(OldBuild, NewBuild, Stroke)
+			local Children: { InterfaceWorksElement & { Object: InterfaceWorksObject, New: InterfaceWorksElement } } =
+				{}
 			local Pointer = 0
 
-			Environment.Changes = Environment.Changes or {}
-			for Path, v in pairs(Environment.Changes) do
+			--Function--(A)--
+
+			for i: number, InterfaceWorksElement in pairs(OldBuild) do
+				if NewBuild[i] == nil then
+					local OldInstance: any = Stroke[i]
+					OldInstance:Destroy()
+				else
+					InterfaceWorksElement["Object"] = Stroke[i]
+					InterfaceWorksElement["New"] = NewBuild[i]
+					table.insert(Children, InterfaceWorksElement)
+				end
 			end
+
+			Environment.Changes = Environment.Changes or {}
 
 			while #Children ~= Pointer do
 				Pointer += 1
 
 				local CurrentStruct = Children[Pointer]
 				local CurrentElement = CurrentStruct.New
-				local OldElement = CurrentStruct.Old
+				local OldElement = CurrentStruct
 
 				local ElementObject = CurrentStruct.Object
 				local ElementInstance = ElementObject.Host
 
-				if CurrentElement.Type == "Object" then
+				if CurrentElement.Type == "Object" and not Environment.Changes[ElementInstance] then
 					for prop, val in CurrentElement.Ps do
 						if OldElement.Ps[prop] ~= val then
 							ElementInstance[prop] = val
+							Environment.Changes[ElementInstance] = true
 						end
 					end
 
-					CompareChildren(OldElement.Cn, CurrentElement.Cn, ElementObject, Children)
+					if CurrentElement.Fs and CurrentElement.Fs[InputTypesEnums.Render] then
+						InputTypes[InputTypesEnums.Render](ElementObject, CurrentElement.Fs[InputTypesEnums.Render])
+					end
+
+					if CurrentElement.An then
+						local AD = CurrentElement.An
+
+						if AD.BeginningPoint and AD.BeginningPointRepeats then
+							for prop, data in pairs(AD.BeginningPoint) do
+								ElementInstance[prop] = data
+							end
+						end
+
+						local Tween = TweenService:Create(ElementInstance, AD.TI, AD.Goals)
+
+						table.insert(ElementObject.Animations, Tween)
+
+						Tween.Completed:Connect(function()
+							table.remove(ElementObject.Animations, table.find(ElementObject.Animations, Tween))
+							Tween:Destroy()
+						end)
+
+						Tween:Play()
+					end
+
+					--Function--(A)--
+
+					for i: number, InterfaceWorksElement in pairs(OldElement.Cn) do
+						if CurrentElement.Cn[i] == nil then
+							local OldInstance: any = ElementObject[i]
+							OldInstance:Destroy()
+						else
+							InterfaceWorksElement["Object"] = ElementObject[i]
+							InterfaceWorksElement["New"] = CurrentElement.Cn[i]
+							table.insert(Children, InterfaceWorksElement)
+						end
+					end
 				elseif CurrentElement.Type == "Fragment" then
 					for dt, val in CurrentElement.FragmentArguments do
 						if OldElement.FragmentArguments[dt] ~= val then
@@ -342,6 +366,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 						end
 					end
 				end
+				CurrentElement["IsProcessed"] = true and not Environment.Changes[ElementInstance]
 			end
 
 			Stroke.CurrentComposition = NewBuild

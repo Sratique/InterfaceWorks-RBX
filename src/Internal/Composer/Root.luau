@@ -11,8 +11,6 @@ local ComposerRoot = {}
 
 local Tickets = require("@Root/Internal/Composer/Tickets")
 local Scheduler = require("./Scheduler")
-local ProtectedObject = require("@Root/Internal/ProtectedObject")
-local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 function ComposerRoot.Compose(
 	Composition: _InterfaceWorksComposition,
@@ -27,7 +25,6 @@ function ComposerRoot.Compose(
 		ComposeJob:Finished(function()
 			local NewStroke = ComposeJob.Environment.Stroke
 
-			NewStroke[RootProperties].Init = true
 			Tickets.Invalidate()
 			ComposeJob:Destroy()
 			if callback then
@@ -60,7 +57,6 @@ function ComposerRoot.Compose(
 
 						local NewStroke = DirtyComposeJob.Environment.Stroke
 
-						NewStroke[RootProperties].Init = true
 						DirtyComposeJob:Destroy()
 						if callback then
 							debug.setmemorycategory("Composer_Callback:TYPE(Stroke")
