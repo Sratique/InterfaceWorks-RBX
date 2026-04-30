@@ -1,8 +1,8 @@
 local types = require("@Root/types")
 type InterfaceWorksValue = types.InterfaceWorksValue
 
-local ValueClass = require("@BaseObject/Value")
-local composer = require("@Root/Internal/composer")
+local ValueClass = require("@Objects/Value")
+local Composer = require("@Root/Internal/Composer")
 
 local Value = {}
 Value.Globals = {}
@@ -10,7 +10,7 @@ Value.Globals = {}
 function Value.NewGlobal() end
 
 function Value.New(default: any): InterfaceWorksValue
-	local Exists: InterfaceWorksValue? = composer.NextValue()
+	local Exists: InterfaceWorksValue? = Composer.Value.NextValue()
 
 	if Exists then
 		return Exists
@@ -18,7 +18,7 @@ function Value.New(default: any): InterfaceWorksValue
 
 	local Value: InterfaceWorksValue = ValueClass.New(default)
 
-	composer.IndexValue(Value)
+	Composer.Value.IndexValue(Value)
 
 	return Value
 end

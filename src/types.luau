@@ -1,72 +1,160 @@
 local Types = {}
 
-export type InterfaceWorksType = "Object" | "Property"
+--CLASSES
 
 export type InterfaceWorksBase = {
-
-	Insert: (self: any, any, any) -> (),
-	GetChildren: () -> { InterfaceWorksBase },
-	GetTreeRoot: () -> InterfaceWorksBase,
-	Host: any,
+	__Destroy: (self: InterfaceWorksBase) -> (),
+	__Remove: (self: InterfaceWorksBase, index: number | string) -> (),
+	IsA: (self: InterfaceWorksBase, ClassName: string) -> boolean,
+	GetChildren: (self: InterfaceWorksBase) -> { InterfaceWorksBase },
+	GetTreeRoot: (self: InterfaceWorksBase) -> InterfaceWorksRoot,
+	Destroying: (self: InterfaceWorksBase, callback: () -> ()) -> (),
+	Insert: (self: InterfaceWorksBase, Child: InterfaceWorksBase, ID: string | number, SkipHost: boolean?) -> (),
+	Parent: InterfaceWorksBase?,
+	Host: Instance?,
 }
 
-export type InterfaceWorksRoot = {
+export type InterfaceWorksRoot = InterfaceWorksBase & {
 
-	Attach: (Composition: _InterfaceWorksComposition, ID: string?) -> (),
-	DestroyStroke: (ID: string | "Main") -> (),
+	Attach: (
+		self: InterfaceWorksRoot,
+		Composition: _InterfaceWorksComposition,
+		Arguments: InterfaceWorksRootArguments
+	) -> (),
+	DestroyStroke: (self: InterfaceWorksRoot, ID: string | "Main") -> (),
+	Destroy: (self: InterfaceWorksRoot) -> (),
 }
 
-export type InterfaceWorksObject = {
+export type InterfaceWorksStroke = InterfaceWorksBase & {
 
-	Host: GuiObject,
-	Insert: (self: any, any, any) -> (),
-	Destroy: (self: any) -> (),
+	InsertValue: (InterfaceWorksValue) -> (),
+	GetCurrentValue: (self: InterfaceWorksStroke) -> InterfaceWorksValue,
+	ResetPosition: (self: InterfaceWorksStroke) -> (),
+	Destroy: (self: InterfaceWorksStroke) -> (),
+	GetMouse: (self: InterfaceWorksStroke) -> InterfaceWorksMouse,
+	MaxPointer: (self: InterfaceWorksStroke, callback: (any) -> any) -> (),
+	CurrentPosition: number,
+	Values: { number: any },
+	TotalValues: number,
+	ID: any,
+	RetracingComposition: _InterfaceWorksComposition,
+	CurrentComposition: { InterfaceWorksElement },
+	Host: Frame,
+}
+
+export type InterfaceWorksValue = InterfaceWorksBase & {
+
+	Value: any,
+	ID: number,
+	OnChange: (self: InterfaceWorksValue, () -> ()) -> (),
+	Set: (self: InterfaceWorksValue, any) -> (),
+	Destroy: (self: InterfaceWorksValue, any) -> (),
+}
+
+export type InterfaceWorksObject = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksObject) -> (),
+	GetTreeStroke: (self: InterfaceWorksObject) -> InterfaceWorksStroke,
 	Workers: { InterfaceWorksWorker },
-	GetChildren: () -> { InterfaceWorksBase },
-	GetTreeRoot: () -> InterfaceWorksBase,
+	Animations: { InterfaceWorksAnimationData },
+	Host: GuiObject,
 }
 
-export type InterfaceWorksElement = {
+export type InterfaceWorksMaterial = InterfaceWorksBase & {
 
-	ID: string,
-	Ps: { [string]: any },
-	Fs: { [InterfaceWorksType | string]: (any) -> any }?,
-	Cn: { [string | number]: InterfaceWorksElement }?,
-	Type: "Object" | "Property",
+	Targets: { InterfaceWorksObject },
+	ReactivityWorkers: InterfaceWorksWorker,
+	ReactivityFunction: (InterfaceWorksObject) -> ...RBXScriptConnection,
+	ConstantReactivityWorker: InterfaceWorksWorker,
+	AddTarget: (self: InterfaceWorksMaterial, InterfaceWorksObject) -> (),
 }
 
-export type InterfaceWorksWorker = {
+export type InterfaceWorksWorker = InterfaceWorksBase & {
 
 	Disconnect: (self: InterfaceWorksWorker) -> nil,
 	SelfProcesses: { RBXScriptConnection | (any) -> any },
 	ChildProcesses: { InterfaceWorksWorker },
 }
 
-export type _InterfaceWorksComposition = () -> InterfaceWorksElement
-
-export type InterfaceWorksValue = {
-
-	Value: any,
-	OnChange: (self: InterfaceWorksValue, () -> ()) -> (),
-	Set: (any) -> (),
-	Destroy: (any) -> (),
+export type InterfaceWorksMouse = InterfaceWorksBase & {
+	GetLocation: (self: InterfaceWorksMouse) -> Vector2,
+	Root: InterfaceWorksRoot?,
 }
 
-export type InterfaceWorksStroke = {
+--INTERNAL CLASSES
 
-	API: { string: (any) -> any },
-	Values: { number: any },
-	RetracingComposition: _InterfaceWorksComposition,
-	CurrentComposition: { InterfaceWorksElement },
-	Children: { InterfaceWorksElement },
-	InsertValue: (InterfaceWorksValue) -> (),
-	Insert: (self: InterfaceWorksStroke, any, any) -> (),
-	Host: Frame,
-	GetCurrentValue: () -> InterfaceWorksValue,
-	ResetPosition: (self: InterfaceWorksStroke) -> (),
-	GetChildren: () -> { InterfaceWorksBase },
-	GetTreeRoot: () -> InterfaceWorksBase,
-	CurrentPosition: number,
+export type InterfaceWorksJob = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksJob) -> (),
+	SetArgs: (self: InterfaceWorksJob, ...any) -> (),
+	SetEnv: (self: InterfaceWorksJob, Env: { [any]: any }) -> (),
+	GetArtifact: (self: InterfaceWorksJob) -> ...any,
+	Finished: (self: InterfaceWorksJob, callback: () -> ()) -> (),
+	Run: (self: InterfaceWorksJob, ...any) -> (),
+	Environment: { [any]: any },
+	Current: thread?,
+}
+
+export type InterfaceWorksTicket = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksTicket) -> (),
+	Job: () -> (),
+	ID: string?,
+	Environment: { [any]: any },
+}
+
+--DATA TYPES
+
+export type InterfaceWorksElement = {
+
+	ID: string,
+	Type: "Object" | "Property" | "Fragment",
+	Ps: { [string]: any }?,
+	Fs: { [InterfaceWorksInputType | string]: (any) -> any }?,
+	Cn: { [string | number]: InterfaceWorksElement }?,
+	Mt: InterfaceWorksMaterial?,
+	An: InterfaceWorksAnimationData?,
+	Composition: _InterfaceWorksComposition?,
+	FragmentArguments: { any }?,
+}
+
+export type InterfaceWorksElementData = {
+
+	Properties: {
+		[string]: any,
+	}?,
+	Functions: {
+		[InterfaceWorksInputType | string]: (any) -> any,
+	}?,
+	Material: InterfaceWorksMaterial?,
+	Animation: InterfaceWorksAnimationData?,
+}
+
+export type InterfaceWorksAnimationData = {
+	Goals: { [string]: any },
+	BeginningPoint: { any }?,
+	BeginningPointRepeats: boolean?,
+	TI: TweenInfo,
+}
+
+export type InterfaceWorksInputType = number
+export type InterfaceWorksValueID = number
+export type InterfaceWorksTicketType = "Compose" | "Recompose"
+export type _InterfaceWorksComposition = (...any) -> { InterfaceWorksElement }
+export type InterfaceWorksRootArguments = {
+	["StrokeID"]: string? | "Main",
+	["ComposerID"]: string?,
+}
+export type InterfaceWorksRenderingSchedule = {
+
+	[number]: {
+		Parent: InterfaceWorksStroke?,
+		Composition: _InterfaceWorksComposition,
+		Arguments: { [any]: any }?,
+		ID: string,
+		IsRoot: boolean?,
+		Reuse: Instance?,
+	},
 }
 
 return Types

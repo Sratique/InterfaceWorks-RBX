@@ -1,9 +1,13 @@
 local types = require("@Root/types")
 type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksRoot = types.InterfaceWorksRoot
+type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksRootArguements = types.InterfaceWorksRootArguments
 
 local BaseObject = require("@BaseObject")
-local Composer = require("@Root/Internal/composer")
+
+local Composer = require("@Root/Internal/Composer")
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local TreeRoot = {}
 TreeRoot.__index = setmetatable(TreeRoot, BaseObject)
@@ -13,15 +17,25 @@ function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
 
 	local NewTreeRoot = setmetatable(NewBaseObject, TreeRoot)
 
+	ProtectedObject.LayerInheritance(NewTreeRoot, "InterfaceWorksRoot")
+
 	return NewTreeRoot
 end
 
-function TreeRoot:Attach(Composition: () -> types.InterfaceWorksElement, ID: string?)
-	Composer.Compose(Composition, function(ComposedStroke: InterfaceWorksStroke)
-		ComposedStroke.Host.Name = ID or "Main"
+function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: InterfaceWorksRootArguements)
+	Arguments = Arguments or {}
 
-		self:Insert(ComposedStroke, ID or "Main")
-	end)
+	local SID = Arguments.StrokeID
+	local CID = Arguments.ComposerID
+	Composer.Main.Compose(Composition, function(ComposedStroke: InterfaceWorksStroke)
+		ComposedStroke.Host.Name = SID or "Main"
+
+		self:Insert(ComposedStroke, SID or "Main")
+	end, CID)
+end
+
+function TreeRoot:Destroy()
+	self:__Destroy()
 end
 
 function TreeRoot:DestroyStroke(ID: string | "Main")

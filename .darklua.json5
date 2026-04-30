@@ -4,12 +4,37 @@
       rule: "convert_require",
       current: "path",
       target: {
-        name: "roblox"
+        name: "luau"
       }
     },
     {
       rule: "remove_comments",
       except: ["^--!"]
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "VERSION",
+      value: "1.6.1",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "CHANNEL",
+      value: "gesture-prerelease",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "SchedulerVersion",
+      value: "0.0.1",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "JobsVersion",
+      value: "0.0.1",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "TicketsVersion",
+      value: "0.0.2",
     }
   ]
 }

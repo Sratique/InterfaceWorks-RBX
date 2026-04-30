@@ -3,6 +3,8 @@ type InterfaceWorksValue = types.InterfaceWorksValue
 
 local BaseObject = require("@BaseObject")
 
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
+
 local Value = {}
 Value.__index = setmetatable(Value, BaseObject)
 
@@ -11,7 +13,10 @@ function Value.New(DefaultValue: number): InterfaceWorksValue
 
 	local NewValue = setmetatable(NewBaseObject, Value)
 
+	ProtectedObject.LayerInheritance(NewValue, "InterfaceWorksValue")
+
 	NewValue.ChangeFunctions = {}
+	NewValue.ID = 0
 
 	NewValue.Value = DefaultValue
 
@@ -23,6 +28,10 @@ function Value:OnChange(func: () -> ())
 end
 
 function Value:Set(NewValue: any)
+	if NewValue == self.Value then
+		return
+	end
+
 	self.Value = NewValue
 
 	for _, v: () -> () in pairs(self.ChangeFunctions) do
@@ -31,11 +40,7 @@ function Value:Set(NewValue: any)
 end
 
 function Value:Destroy()
-	table.clear(self.ChangeFunctions)
-	self.Value = nil
-	self.ChangeFunctions = nil
-	setmetatable(self, nil)
-	table.clear(self)
+	self:__Destroy()
 end
 
 return Value

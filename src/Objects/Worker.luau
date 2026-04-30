@@ -4,6 +4,8 @@ type InterfaceWorksWorker = types.InterfaceWorksWorker
 
 local BaseObject = require("@BaseObject")
 
+local ProtectedObject = require("@Root/Internal/ProtectedObject")
+
 local Worker = {}
 Worker.__index = setmetatable(Worker, BaseObject)
 
@@ -11,6 +13,9 @@ function Worker.New(...): InterfaceWorksWorker
 	local NewBaseObject = BaseObject.New()
 
 	local NewWorker: InterfaceWorksWorker = setmetatable(NewBaseObject, Worker)
+
+	ProtectedObject.LayerInheritance(NewWorker, "InterfaceWorksWorker")
+
 	NewWorker.SelfProcesses = {}
 
 	for i, v: RBXScriptConnection | () -> () in { ... } do
@@ -20,10 +25,20 @@ function Worker.New(...): InterfaceWorksWorker
 	return NewWorker
 end
 
+function Worker:Destroy()
+	for _, v: RBXScriptConnection in pairs(self.SelfProcesses) do
+		v:Disconnect()
+	end
+
+	self:__Destroy()
+end
+
 function Worker:Disconnect()
 	for _, v: RBXScriptConnection in pairs(self.SelfProcesses) do
 		v:Disconnect()
 	end
+
+	self:__Destroy()
 end
 
 return Worker

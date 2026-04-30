@@ -1,41 +1,105 @@
+if game:GetService("RunService"):IsRunning() or game:GetService("RunService"):IsServer() then
+	warn(
+		"Running InterfaceWorks (combined) version: "
+			.. _G.VERSION
+			.. "@"
+			.. _G.CHANNEL
+			.. " on interpreter version: "
+			.. version()
+	)
+end
+
+if _G.InterfaceWorksDebug then
+	local SpecificVersion = string.split(version(), ".")
+
+	local ShellGeneration = SpecificVersion[1]
+	local ReleaseVer = SpecificVersion[2]
+	local PatchNmbr = SpecificVersion[3]
+	local CommitID = SpecificVersion[4]
+
+	local Scheduler = require("@Root/Internal/Composer/Scheduler")
+	local Jobs = require("@Root/Internal/Composer/Jobs")
+	local Tickets = require("@Root/Internal/Composer/Tickets")
+
+	warn(
+		"Debugging info: \n"
+			.. "----------------------[ROBLOX CLIENT INFO]----------------------\n"
+			.. "Shell generation: "
+			.. ShellGeneration
+			.. "\n"
+			.. "ReleaseVer: "
+			.. ReleaseVer
+			.. "\n"
+			.. "Patch number: "
+			.. PatchNmbr
+			.. "\n"
+			.. "Internal Commit ID: "
+			.. CommitID
+			.. "\n"
+			.. "---------------------[InterfaceWorks INFO]----------------------\n"
+			.. "Launched in: "
+			.. elapsedTime()
+			.. " seconds from *Client* start.\n"
+			.. "Scheduler version: "
+			.. Scheduler._VERSION
+			.. "\n"
+			.. "Jobs version: "
+			.. Jobs._VERSION
+			.. "\n"
+			.. "Tickets version: "
+			.. Tickets._VERSION
+	)
+
+	if _G.InterfaceWorksDebuggerKernel then
+		_G.InterfaceWorksDebuggerKernel:CanInit(script)
+	end
+end
+
 local types = require("@Root/types")
 type InterfaceWorksElement = types.InterfaceWorksElement
+type InterfaceWorksElementData = types.InterfaceWorksElementData
+type InterfaceWorksMaterial = types.InterfaceWorksMaterial
+type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
+type _InterfaceWorksComposition = types._InterfaceWorksComposition
 
-local Root = require("@BaseObject/Root")
-local InputTypes = require("@Root/Forward/InputTypesEnums")
-local Property = require("@Root/Forward/Property")
-local Value = require("@Root/Forward/ValueController")
+local Root = require("@Objects/Root")
+local InputTypes = require("@Root/Public/InputTypesEnums")
+local Property = require("@Root/Public/Property")
+local Materials = require("@Root/Public/MaterialController")
+local Value = require("@Root/Public/ValueController")
+local Assets = require("@Root/Public/AssetsBank")
 
 local InterfaceWorks = {}
-InterfaceWorks.Trees = {}
 
 InterfaceWorks.Value = Value
 InterfaceWorks.InputTypes = InputTypes
-InterfaceWorks.Property = Property
-InterfaceWorks.Types = types
+InterfaceWorks.CreateProperty = Property
+InterfaceWorks.Materials = Materials
+InterfaceWorks.Assets = Assets
 
-function InterfaceWorks.GetRoot(RID: string)
-	return InterfaceWorks.Trees[RID]
-end
-
-function InterfaceWorks.CreateRoot(Container: Instance?, SaveAs: string?)
+function InterfaceWorks.CreateRoot(Container: Instance?)
 	local Base = Container or Instance.new("ScreenGui")
 
 	local NewTreeRoot = Root.New(Base)
 
-	if SaveAs then
-		InterfaceWorks.Trees[SaveAs] = NewTreeRoot
-	end
-
 	return NewTreeRoot
 end
 
-function InterfaceWorks.CreateElement(Classname: string, Properties, Functions, Children): InterfaceWorksElement
+function InterfaceWorks.CreateElement(
+	Classname: string,
+	Data: InterfaceWorksElementData,
+	Children
+): InterfaceWorksElement
+	Data = Data or {}
+	Children = Children or {}
+
 	local Struct = {
 
 		ID = Classname,
-		Ps = Properties,
-		Fs = Functions,
+		Ps = Data.Properties,
+		Fs = Data.Functions,
+		Mt = Data.Material,
+		An = Data.Animation,
 		Cn = Children,
 		Type = "Object",
 	}
@@ -43,13 +107,40 @@ function InterfaceWorks.CreateElement(Classname: string, Properties, Functions, 
 	return Struct
 end
 
-function InterfaceWorks.CreateProperty(Classname: string, Properties, Children): InterfaceWorksElement
-	local Struct = {
+function InterfaceWorks.CreateAnimation(AnimationData: {
+	Goals: { [string]: any },
+	BeginningPoint: { any }?,
+	BeginningPointRepeats: boolean?,
+	Duration: number,
+	EasingStyle: Enum.EasingStyle?,
+	EasingDirection: Enum.EasingDirection?,
+	RepeatCount: number?,
+	Reverses: boolean?,
+	delayTime: number?,
+}): InterfaceWorksAnimationData
+	local NewAnimationData = {
+		Goals = AnimationData.Goals,
+		BeginningPoint = AnimationData.BeginningPoint,
+		BeginningPointRepeats = AnimationData.BeginningPointRepeats,
+		TI = TweenInfo.new(
+			AnimationData.Duration,
+			AnimationData.EasingStyle or Enum.EasingStyle.Linear,
+			AnimationData.EasingDirection or Enum.EasingDirection.In,
+			AnimationData.RepeatCount or 0,
+			AnimationData.Reverses or false,
+			AnimationData.delayTime or 0
+		),
+	}
 
-		ID = Classname,
-		Ps = Properties,
-		Cn = Children,
-		Type = "Property",
+	return NewAnimationData
+end
+
+function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, ...: any): InterfaceWorksElement
+	local Struct = {
+		ID = nil,
+		Type = "Fragment",
+		Composition = Composition,
+		FragmentArguments = { ... },
 	}
 
 	return Struct
