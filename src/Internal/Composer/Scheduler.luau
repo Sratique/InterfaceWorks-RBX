@@ -97,7 +97,6 @@ end
 
 function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksComposition)
 	return Jobs.CreateJob(function(Environment)
-		local t = os.clock()
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
 				["Parent"] = nil,
@@ -164,7 +163,6 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 			NewStroke[RootProperties].Init = true
 		end
 		ComposerScheduler.CurrentComposition = nil
-		print("Composition time: " .. os.clock() - t)
 	end)
 end
 
@@ -290,7 +288,6 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 	debug.setmemorycategory("Scheduler_ChildrenTable:CREATE")
 
 	return Jobs.CreateJob(function(Environment: { [string]: { any } })
-		local t = os.clock()
 		local Strokes = { Init }
 		for _, Stroke in Strokes do
 			ComposerScheduler.CurrentComposition = Stroke
@@ -403,7 +400,6 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 
 			Stroke.CurrentComposition = NewBuild
 		end
-		print("ReComposition time: " .. os.clock() - t)
 	end)
 end
 
