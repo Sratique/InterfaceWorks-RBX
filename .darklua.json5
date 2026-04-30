@@ -14,12 +14,27 @@
     {
       rule: "inject_global_value",
       identifier: "VERSION",
-      value: "0.0.1",
+      value: "1.6.1",
     },
     {
       rule: "inject_global_value",
       identifier: "CHANNEL",
-      value: "Alpha-Channel",
+      value: "gesture-prerelease",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "SchedulerVersion",
+      value: "0.0.1",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "JobsVersion",
+      value: "0.0.1",
+    },
+    {
+      rule: "inject_global_value",
+      identifier: "TicketsVersion",
+      value: "0.0.2",
     }
   ]
 }

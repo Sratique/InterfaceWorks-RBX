@@ -62,7 +62,7 @@ function BaseObject:Destroying(callback: () -> ())
 	table.insert(self[RootProperties].Destroying, callback)
 end
 
-function BaseObject:Insert(Object, ID: string)
+function BaseObject:Insert(Object, ID: string, SkipHost: boolean?)
 	table.insert(self[RootProperties].Children, Object) -- add to the internal table so that the getchildren function will also return this object
 
 	Object[RootProperties].TreeRoot = if self[RootProperties].TreeRoot
@@ -79,7 +79,7 @@ function BaseObject:Insert(Object, ID: string)
 		table.insert(self, Object)
 	end
 
-	if Object.Host and self.Host then -- actually kinda like parent it finally
+	if Object.Host and self.Host and not SkipHost then -- actually kinda like parent it finally if skiphost is false
 		Object.Host.Parent = self.Host
 	end
 end

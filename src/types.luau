@@ -9,14 +9,18 @@ export type InterfaceWorksBase = {
 	GetChildren: (self: InterfaceWorksBase) -> { InterfaceWorksBase },
 	GetTreeRoot: (self: InterfaceWorksBase) -> InterfaceWorksRoot,
 	Destroying: (self: InterfaceWorksBase, callback: () -> ()) -> (),
-	Insert: (self: InterfaceWorksBase, Child: InterfaceWorksBase, ID: string | number) -> (),
+	Insert: (self: InterfaceWorksBase, Child: InterfaceWorksBase, ID: string | number, SkipHost: boolean?) -> (),
 	Parent: InterfaceWorksBase?,
 	Host: Instance?,
 }
 
 export type InterfaceWorksRoot = InterfaceWorksBase & {
 
-	Attach: (self: InterfaceWorksRoot, Composition: _InterfaceWorksComposition, ID: string?) -> (),
+	Attach: (
+		self: InterfaceWorksRoot,
+		Composition: _InterfaceWorksComposition,
+		Arguments: InterfaceWorksRootArguments
+	) -> (),
 	DestroyStroke: (self: InterfaceWorksRoot, ID: string | "Main") -> (),
 	Destroy: (self: InterfaceWorksRoot) -> (),
 }
@@ -24,13 +28,15 @@ export type InterfaceWorksRoot = InterfaceWorksBase & {
 export type InterfaceWorksStroke = InterfaceWorksBase & {
 
 	InsertValue: (InterfaceWorksValue) -> (),
-	Insert: (self: InterfaceWorksStroke, any, any) -> (),
 	GetCurrentValue: (self: InterfaceWorksStroke) -> InterfaceWorksValue,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
 	Destroy: (self: InterfaceWorksStroke) -> (),
 	GetMouse: (self: InterfaceWorksStroke) -> InterfaceWorksMouse,
+	MaxPointer: (self: InterfaceWorksStroke, callback: (any) -> any) -> (),
 	CurrentPosition: number,
 	Values: { number: any },
+	TotalValues: number,
+	ID: any,
 	RetracingComposition: _InterfaceWorksComposition,
 	CurrentComposition: { InterfaceWorksElement },
 	Host: Frame,
@@ -39,6 +45,7 @@ export type InterfaceWorksStroke = InterfaceWorksBase & {
 export type InterfaceWorksValue = InterfaceWorksBase & {
 
 	Value: any,
+	ID: number,
 	OnChange: (self: InterfaceWorksValue, () -> ()) -> (),
 	Set: (self: InterfaceWorksValue, any) -> (),
 	Destroy: (self: InterfaceWorksValue, any) -> (),
@@ -72,6 +79,28 @@ export type InterfaceWorksWorker = InterfaceWorksBase & {
 export type InterfaceWorksMouse = InterfaceWorksBase & {
 	GetLocation: (self: InterfaceWorksMouse) -> Vector2,
 	Root: InterfaceWorksRoot?,
+}
+
+--INTERNAL CLASSES
+
+export type InterfaceWorksJob = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksJob) -> (),
+	SetArgs: (self: InterfaceWorksJob, ...any) -> (),
+	SetEnv: (self: InterfaceWorksJob, Env: { [any]: any }) -> (),
+	GetArtifact: (self: InterfaceWorksJob) -> ...any,
+	Finished: (self: InterfaceWorksJob, callback: () -> ()) -> (),
+	Run: (self: InterfaceWorksJob, ...any) -> (),
+	Environment: { [any]: any },
+	Current: thread?,
+}
+
+export type InterfaceWorksTicket = InterfaceWorksBase & {
+
+	Destroy: (self: InterfaceWorksTicket) -> (),
+	Job: () -> (),
+	ID: string?,
+	Environment: { [any]: any },
 }
 
 --DATA TYPES
@@ -109,6 +138,23 @@ export type InterfaceWorksAnimationData = {
 }
 
 export type InterfaceWorksInputType = number
+export type InterfaceWorksValueID = number
+export type InterfaceWorksTicketType = "Compose" | "Recompose"
 export type _InterfaceWorksComposition = (...any) -> { InterfaceWorksElement }
+export type InterfaceWorksRootArguments = {
+	["StrokeID"]: string? | "Main",
+	["ComposerID"]: string?,
+}
+export type InterfaceWorksRenderingSchedule = {
+
+	[number]: {
+		Parent: InterfaceWorksStroke?,
+		Composition: _InterfaceWorksComposition,
+		Arguments: { [any]: any }?,
+		ID: string,
+		IsRoot: boolean?,
+		Reuse: Instance?,
+	},
+}
 
 return Types
