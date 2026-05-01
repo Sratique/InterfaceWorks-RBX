@@ -1,8 +1,8 @@
 [package]
-name = "forgeworks-studio/interfaceworks"
+name = "sratique/interfaceworks"
 description = "Reactive UI library"
 license = "LGPL-2.1"
-version = "0.1.0"
+version = "0.2.2"
 registry = "https://github.com/UpliftGames/wally-index"
 homepage = "https://sratique.github.io/InterfaceWorks-Docs/"
 repository = "https://github.com/Sratique/InterfaceWorks-RBX"

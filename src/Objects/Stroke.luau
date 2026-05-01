@@ -24,8 +24,6 @@ function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse:
 
 	local NewStroke = setmetatable(NewBaseObject, Stroke)
 
-	NewStroke.Mouse = Mouse.New(NewStroke)
-
 	NewStroke.Values = {}
 	NewStroke.TotalValues = 0
 	NewStroke.CurrentPosition = 0
@@ -40,6 +38,10 @@ function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse:
 	ProtectedObject.LayerInheritance(NewStroke, "InterfaceWorksStroke")
 
 	return NewStroke
+end
+
+function Stroke:__Init()
+	self[RootProperties].Init = true
 end
 
 function Stroke:MaxPointer(callback: () -> ())
@@ -99,6 +101,7 @@ function Stroke:Destroy()
 end
 
 function Stroke:GetMouse()
+	self.Mouse = self.Mouse or Mouse.New(self)
 	return self.Mouse
 end
 

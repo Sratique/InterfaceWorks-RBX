@@ -169,7 +169,7 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 				end
 			end
 			--Set stroke state to init=true
-			NewStroke[RootProperties].Init = true
+			NewStroke:__Init()
 		end
 		ComposerScheduler.CurrentComposition = nil
 	end)
@@ -287,7 +287,7 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 				end
 			end
 			--Set stroke state to init=true
-			NewStroke[RootProperties].Init = true
+			NewStroke:__Init()
 		end
 		ComposerScheduler.CurrentComposition = nil
 	end)
@@ -360,7 +360,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 				if
 					CurrentElement.Type == "Object" and Environment.Changes[ElementInstance] == nil
 					or Environment.Changes[ElementInstance] == true
-				then -- this line very broken yes yes
+				then
 					if OldElement then
 						Environment.Changes[ElementInstance] = false
 						for prop, val in CurrentElement.Ps or {} do
@@ -396,7 +396,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 						end
 					end
 
-					CompareChildren(OldElement.Cn, CurrentElement.Cn, ElementObject)
+					CompareChildren(OldElement and OldElement.Cn or {}, CurrentElement.Cn, ElementObject)
 				elseif CurrentElement.Type == "Fragment" then
 					for dt, val in CurrentElement.FragmentArguments or {} do
 						if OldElement.FragmentArguments[dt] ~= val then
