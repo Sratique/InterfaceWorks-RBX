@@ -9,7 +9,12 @@ export type InterfaceWorksBase = {
 	GetChildren: (self: InterfaceWorksBase) -> { InterfaceWorksBase },
 	GetTreeRoot: (self: InterfaceWorksBase) -> InterfaceWorksRoot,
 	Destroying: (self: InterfaceWorksBase, callback: () -> ()) -> (),
-	Insert: (self: InterfaceWorksBase, Child: InterfaceWorksBase, ID: string | number, SkipHost: boolean?) -> (),
+	Insert: (
+		self: InterfaceWorksBase,
+		Child: InterfaceWorksBase,
+		ID: string | number | string? | nil,
+		SkipHost: boolean?
+	) -> (),
 	Parent: InterfaceWorksBase?,
 	Host: Instance?,
 }
@@ -27,7 +32,7 @@ export type InterfaceWorksRoot = InterfaceWorksBase & {
 
 export type InterfaceWorksStroke = InterfaceWorksBase & {
 
-	InsertValue: (InterfaceWorksValue) -> (),
+	InsertValue: (self: InterfaceWorksStroke, Value: InterfaceWorksValue) -> (),
 	GetCurrentValue: (self: InterfaceWorksStroke) -> InterfaceWorksValue,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
 	Destroy: (self: InterfaceWorksStroke) -> (),
@@ -111,7 +116,7 @@ export type InterfaceWorksElement = {
 	Type: "Object" | "Property" | "Fragment",
 	Ps: { [string]: any }?,
 	Fs: { [InterfaceWorksInputType | string]: (any) -> any }?,
-	Cn: { [string | number]: InterfaceWorksElement }?,
+	Cn: { [string | number]: InterfaceWorksElement },
 	Mt: InterfaceWorksMaterial?,
 	An: InterfaceWorksAnimationData?,
 	Composition: _InterfaceWorksComposition?,
@@ -145,16 +150,13 @@ export type InterfaceWorksRootArguments = {
 	["StrokeID"]: string? | "Main",
 	["ComposerID"]: string?,
 }
-export type InterfaceWorksRenderingSchedule = {
-
-	[number]: {
-		Parent: InterfaceWorksStroke?,
-		Composition: _InterfaceWorksComposition,
-		Arguments: { [any]: any }?,
-		ID: string,
-		IsRoot: boolean?,
-		Reuse: Instance?,
-	},
+export type InterfaceWorksRenderingSchedule = { InterfaceWorksRenderingTicket }
+export type InterfaceWorksRenderingTicket = {
+	Parent: (InterfaceWorksBase | InterfaceWorksElement | InterfaceWorksStroke)? | nil,
+	Composition: _InterfaceWorksComposition,
+	Arguments: { any }?,
+	ID: string | nil,
+	IsRoot: boolean?,
+	Reuse: Instance?,
 }
-
 return Types

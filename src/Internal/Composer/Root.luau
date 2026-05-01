@@ -17,8 +17,6 @@ function ComposerRoot.Compose(
 	callback: (InterfaceWorksStroke) -> ()?,
 	ID: string?
 )
-	debug.setmemorycategory("Composer_New:TYPE(StrokeObject)")
-
 	local Ticket, Existing = Tickets.New("Compose", ID, function(self)
 		local ComposeJob = Scheduler.Compose_Create(Composition)
 
@@ -28,14 +26,12 @@ function ComposerRoot.Compose(
 			Tickets.Invalidate()
 			ComposeJob:Destroy()
 			if callback then
-				debug.setmemorycategory("Composer_Callback:TYPE(Stroke")
 				callback(NewStroke)
 			end
 		end)
 
 		self.Environment.Job = ComposeJob
 
-		debug.setmemorycategory("Composer_Create:TYPE(Stroke)")
 		ComposeJob:Run()
 	end)
 
@@ -59,12 +55,10 @@ function ComposerRoot.Compose(
 
 						DirtyComposeJob:Destroy()
 						if callback then
-							debug.setmemorycategory("Composer_Callback:TYPE(Stroke")
 							callback(NewStroke)
 						end
 					end)
 
-					debug.setmemorycategory("Composer_Create:TYPE(Stroke)")
 					DirtyComposeJob:Run()
 				end)
 			end

@@ -45,7 +45,7 @@ function ComposerTickets.New(
 	else
 		warn("Unknown composer type - InterfaceWorks:Tickets")
 	end
-	if #ComposerTickets.Queue == 1 and not ComposerTickets.CurrentTicket then
+	if not ComposerTickets.CurrentTicket then
 		ComposerTickets.Next()
 	end
 	return CurrentTicket, false
@@ -76,6 +76,9 @@ end
 function ComposerTickets.Reintroduce(CurrentTicket)
 	ComposerTickets.Parallel[CurrentTicket.ID] = nil
 	table.insert(ComposerTickets.Queue, 1, CurrentTicket)
+	if not ComposerTickets.CurrentTicket then
+		ComposerTickets.Next()
+	end
 end
 
 function ComposerTickets.SetParallel()

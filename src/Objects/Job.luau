@@ -58,6 +58,11 @@ function JobObject:Finished(callback: () -> ())
 end
 
 function JobObject:Destroy()
+	self.Function = nil
+	table.clear(self.FinishedConnections)
+	table.clear(self.Environment)
+	table.clear(self.Arguments)
+
 	self:__Destroy()
 end
 
