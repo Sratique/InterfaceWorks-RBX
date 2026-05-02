@@ -62,7 +62,7 @@ function BaseObject:Destroying(callback: () -> ())
 	table.insert(self[RootProperties].Destroying, callback)
 end
 
-function BaseObject:Insert(Object, ID: string, SkipHost: boolean?)
+function BaseObject:Insert(Object, ID: string | number | string? | nil, SkipHost: boolean?)
 	table.insert(self[RootProperties].Children, Object) -- add to the internal table so that the getchildren function will also return this object
 
 	Object[RootProperties].TreeRoot = if self[RootProperties].TreeRoot

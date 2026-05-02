@@ -11,7 +11,7 @@ local RootProperties = ProtectedObject.GetProxy("RootProperties")
 local Object = {}
 Object.__index = setmetatable(Object, BaseObject)
 
-function Object.New(SourceInstance: GuiObject): InterfaceWorksObject
+function Object.New(SourceInstance: Instance): InterfaceWorksObject
 	local NewBaseObject = BaseObject.New(SourceInstance)
 
 	local NewObject = setmetatable(NewBaseObject, Object)

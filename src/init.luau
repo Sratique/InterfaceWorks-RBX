@@ -141,6 +141,7 @@ function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, 
 		Type = "Fragment",
 		Composition = Composition,
 		FragmentArguments = { ... },
+		Cn = {},
 	}
 
 	return Struct
