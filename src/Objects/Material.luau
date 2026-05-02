@@ -14,7 +14,7 @@ MaterialObject.__index = setmetatable(MaterialObject, BaseObject)
 
 function MaterialObject.New(
 	DefaultProperties: { [string | "Default"]: { [string]: any } },
-	Reactivity: (InterfaceWorksObject) -> ...RBXScriptConnection?,
+	Reactivity: (InterfaceWorksObject) -> ...() -> (),
 	ConstantReactivity: (InterfaceWorksObject) -> ()?
 ): InterfaceWorksMaterial
 	local NewBaseObject = BaseObject.New()

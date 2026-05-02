@@ -8,7 +8,7 @@ local Materials = {}
 
 function Materials.New(
 	DefaultProperties: { [string | "Default"]: { [string]: any } },
-	Reactivity: (InterfaceWorksObject) -> ...RBXScriptConnection?,
+	Reactivity: (InterfaceWorksObject) -> ...() -> (),
 	ConstantReactivity: (InterfaceWorksObject) -> ()?
 ): InterfaceWorksMaterial
 	local NewMaterialObject = MaterialObject.New(DefaultProperties, Reactivity, ConstantReactivity)
