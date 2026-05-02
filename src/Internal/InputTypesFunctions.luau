@@ -52,7 +52,9 @@ return {
 			end
 		end)
 
-		return Worker.New(RenderUsage)
+		return Worker.New(function()
+			RenderUsage:Disconnect()
+		end)
 	end,
 	[InputTypesEnums.RightClick] = function(
 		self: InterfaceWorksObject,
@@ -98,7 +100,9 @@ return {
 			end
 		end)
 
-		return Worker.New(RenderUsage)
+		return Worker.New(function()
+			RenderUsage:Disconnect()
+		end)
 	end,
 	[InputTypesEnums.Focus] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
 		if self.Host:IsA("TextBox") then

@@ -18,7 +18,7 @@ function Worker.New(...): InterfaceWorksWorker
 
 	NewWorker.SelfProcesses = {}
 
-	for i, v: RBXScriptConnection | () -> () in { ... } do
+	for i, v: () -> () in { ... } do
 		NewWorker.SelfProcesses[i] = v
 	end
 
@@ -26,16 +26,16 @@ function Worker.New(...): InterfaceWorksWorker
 end
 
 function Worker:Destroy()
-	for _, v: RBXScriptConnection in pairs(self.SelfProcesses) do
-		v:Disconnect()
+	for _, v: () -> () in pairs(self.SelfProcesses) do
+		v()
 	end
 
 	self:__Destroy()
 end
 
 function Worker:Disconnect()
-	for _, v: RBXScriptConnection in pairs(self.SelfProcesses) do
-		v:Disconnect()
+	for _, v: () -> () in pairs(self.SelfProcesses) do
+		v()
 	end
 
 	self:__Destroy()
