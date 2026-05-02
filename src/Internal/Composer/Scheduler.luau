@@ -17,8 +17,6 @@ ComposerScheduler._VERSION = _G.SchedulerVersion
 local Jobs = require("@Root/Internal/Composer/Jobs")
 local InputTypes = require("@Root/Internal/InputTypesFunctions")
 local InputTypesEnums = require("@Root/Public/InputTypesEnums")
-local ProtectedObject = require("@Root/Internal/ProtectedObject")
-local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 local StrokeObject = require("@Objects/Stroke")
 local Object = require("@Objects/Object")

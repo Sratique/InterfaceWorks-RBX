@@ -35,6 +35,7 @@ function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: Int
 end
 
 function TreeRoot:Destroy()
+	self.Host = nil
 	self:__Destroy()
 end
 
