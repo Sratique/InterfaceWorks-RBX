@@ -67,11 +67,14 @@ local InputTypes = require("@Root/Public/InputTypesEnums")
 local Property = require("@Root/Public/Property")
 local Materials = require("@Root/Public/MaterialController")
 local Value = require("@Root/Public/ValueController")
+local Event = require("@Root/Public/EventController")
 local Assets = require("@Root/Public/AssetsBank")
+local HelperFunctions = require("@Root/Public/HelperFunctions")
 
 local InterfaceWorks = {}
 
 InterfaceWorks.Value = Value
+InterfaceWorks.Event = Event
 InterfaceWorks.InputTypes = InputTypes
 InterfaceWorks.CreateProperty = Property
 InterfaceWorks.Materials = Materials
@@ -96,6 +99,7 @@ function InterfaceWorks.CreateElement(
 	local Struct = {
 
 		ID = Classname,
+		Key = Data.Key,
 		Ps = Data.Properties,
 		Fs = Data.Functions,
 		Mt = Data.Material,
@@ -147,4 +151,4 @@ function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, 
 	return Struct
 end
 
-return InterfaceWorks
+return setmetatable(InterfaceWorks, { __index = HelperFunctions })

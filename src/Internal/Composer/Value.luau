@@ -19,7 +19,7 @@ function ComposerValues.IndexValue(ValueObject: InterfaceWorksValue)
 		ComposerRoot.ReCompose(CurrentComposition, ValueObject.ID)
 	end)
 
-	ComposerScheduler.CurrentComposition:InsertValue(ValueObject)
+	CurrentComposition:InsertValue(ValueObject)
 end
 
 return ComposerValues
