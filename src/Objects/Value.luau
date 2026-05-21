@@ -9,7 +9,7 @@ local ValueModule = {}
 local ValueObject = {}
 ValueObject.__index = function(self, key)
 	if key == "Value" then
-		return self.__Value
+		return rawget(self, "__Value")
 	end
 	return setmetatable(ValueObject, BaseObject)[key]
 end
@@ -24,6 +24,8 @@ ValueObject.__newindex = function(self, key, value)
 		for _, v: () -> () in pairs(self.ChangeFunctions) do
 			v()
 		end
+
+		return
 	end
 	rawset(self, key, value)
 end

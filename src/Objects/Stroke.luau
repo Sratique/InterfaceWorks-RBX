@@ -2,6 +2,7 @@ local types = require("@Root/types")
 type InterfaceWorksStroke = types.InterfaceWorksStroke
 type InterfaceWorksValue = types.InterfaceWorksValue
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksWorker = types.InterfaceWorksWorker
 
 local BaseObject = require("@BaseObject")
 
@@ -26,7 +27,9 @@ function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse:
 
 	NewStroke.Values = {}
 	NewStroke.TotalValues = 0
-	NewStroke.CurrentPosition = 0
+	NewStroke.CurrentValuePosition = 0
+	NewStroke.Events = {}
+	NewStroke.CurrentEventPosition = 0
 
 	NewStroke.ID = newproxy()
 	NewStroke.RetracingComposition = Composition
@@ -48,9 +51,9 @@ function Stroke:MaxPointer(callback: () -> ())
 	table.insert(self[RootProperties].MaxPointerConnections, callback)
 end
 
-function Stroke:AdvancePosition()
-	self.CurrentPosition += 1
-	if self[RootProperties].Init and self.CurrentPosition == self.TotalValues then
+function Stroke:AdvanceValuePosition()
+	self.CurrentValuePosition += 1
+	if self[RootProperties].Init and self.CurrentValuePosition == self.TotalValues then
 		for i, v in pairs(self[RootProperties].MaxPointerConnections) do
 			v()
 			self[RootProperties].MaxPointerConnections[i] = nil
@@ -58,9 +61,18 @@ function Stroke:AdvancePosition()
 	end
 end
 
+function Stroke:AdvanceEventPosition()
+	self.CurrentEventPosition += 1
+end
+
 function Stroke:GetCurrentValue()
-	self:AdvancePosition()
-	return self.Values[self.CurrentPosition]
+	self:AdvanceValuePosition()
+	return self.Values[self.CurrentValuePosition]
+end
+
+function Stroke:GetCurrentEvent()
+	self:AdvanceEventPosition()
+	return self.Events[self.CurrentEventPosition]
 end
 
 function Stroke:InsertValue(Value: InterfaceWorksValue)
@@ -70,8 +82,13 @@ function Stroke:InsertValue(Value: InterfaceWorksValue)
 	self.Values[ID] = Value
 end
 
+function Stroke:InsertEvent(Event: InterfaceWorksWorker)
+	table.insert(self.Events, Event)
+end
+
 function Stroke:ResetPosition()
-	self.CurrentPosition = 0
+	self.CurrentValuePosition = 0
+	self.CurrentEventPosition = 0
 end
 
 function Stroke:UnMount()
@@ -94,6 +111,9 @@ function Stroke:ReMount()
 end
 
 function Stroke:Destroy()
+	for _, v: InterfaceWorksWorker in pairs(self.Events) do
+		v:Disconnect()
+	end
 	for _, v: InterfaceWorksValue in pairs(self.Values) do
 		v:Destroy()
 	end

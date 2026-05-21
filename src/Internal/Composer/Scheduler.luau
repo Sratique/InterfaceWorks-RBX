@@ -122,7 +122,7 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 			local ChildrenPointer = 0
 
 			for name, element in NewBuild do
-				element["Name"] = name
+				element["Name"] = element.Key or name
 				element["Parent"] = NewStroke
 				table.insert(Children, element :: any)
 			end
@@ -140,7 +140,7 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 
 					for name: string | number, ChildElement: InterfaceWorksElement in Element.Cn do
 						ChildElement["Parent"] = NewObject
-						ChildElement["Name"] = name
+						ChildElement["Name"] = ChildElement.Key or name
 						table.insert(
 							Children,
 							ChildElement :: InterfaceWorksElement & { Parent: InterfaceWorksObject, Name: string }
@@ -202,7 +202,7 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 			local ChildrenPointer = 0
 
 			for name, element in NewBuild do
-				element["Name"] = name
+				element["Name"] = element.Key or name
 				element["Parent"] = NewStroke
 				element["ParentInstance"] = Render.Reuse
 				table.insert(Children, element)
@@ -242,7 +242,7 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 					end
 
 					for name: string | number, element in Element.Cn do
-						element["Name"] = name
+						element["Name"] = element.Key or name
 						element["Parent"] = NewElementObject
 						element["ParentInstance"] = DirtyHost
 						table.insert(Children, element)
@@ -318,6 +318,20 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 				New: { InterfaceWorksElement },
 				ParentObject: InterfaceWorksBase
 			)
+				for i, v in Old do
+					if v.Key then
+						Old[v.Key] = v
+						Old[i] = nil
+					end
+				end
+
+				for i, v in New do
+					if v.Key then
+						New[v.Key] = v
+						New[i] = nil
+					end
+				end
+
 				for i: number, InterfaceWorksElement in New do
 					if Old[i] == nil then
 						InterfaceWorksElement["Name"] = i
@@ -396,11 +410,20 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 
 					CompareChildren(OldElement and OldElement.Cn or {}, CurrentElement.Cn, ElementObject)
 				elseif CurrentElement.Type == "Fragment" then
-					for dt, val in CurrentElement.FragmentArguments or {} do
-						if OldElement.FragmentArguments[dt] ~= val then
-							table.insert(Strokes, ElementObject)
-							break
+					if OldElement then
+						for dt, val in pairs(CurrentElement.FragmentArguments or {}) do
+							if OldElement.FragmentArguments[dt] ~= val then
+								table.insert(Strokes, ElementObject)
+								break
+							elseif typeof(val) == "table" then
+								if getmetatable(val) then
+									table.insert(Strokes, ElementObject)
+									break
+								end
+							end
 						end
+					else
+						table.insert(Strokes, ElementObject)
 					end
 				end
 			end

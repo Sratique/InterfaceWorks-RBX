@@ -14,7 +14,7 @@
     {
       rule: "inject_global_value",
       identifier: "VERSION",
-      value: "0.2.3",
+      value: "0.2.5",
     },
     {
       rule: "inject_global_value",
@@ -24,7 +24,7 @@
     {
       rule: "inject_global_value",
       identifier: "SchedulerVersion",
-      value: "0.0.3",
+      value: "0.0.4",
     },
     {
       rule: "inject_global_value",

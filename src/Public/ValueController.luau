@@ -16,11 +16,11 @@ function Value.New(default: any): InterfaceWorksValue
 		return Exists
 	end
 
-	local Value: InterfaceWorksValue = ValueClass.New(default)
+	local NewValue: InterfaceWorksValue = ValueClass.New(default)
 
-	Composer.Value.IndexValue(Value)
+	Composer.Value.IndexValue(NewValue)
 
-	return Value
+	return NewValue
 end
 
 return Value

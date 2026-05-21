@@ -33,13 +33,16 @@ export type InterfaceWorksRoot = InterfaceWorksBase & {
 export type InterfaceWorksStroke = InterfaceWorksBase & {
 
 	InsertValue: (self: InterfaceWorksStroke, Value: InterfaceWorksValue) -> (),
+	InsertEvent: (self: InterfaceWorksStroke, Event: InterfaceWorksWorker) -> (),
 	GetCurrentValue: (self: InterfaceWorksStroke) -> InterfaceWorksValue,
+	GetCurrentEvent: (self: InterfaceWorksStroke) -> InterfaceWorksWorker,
 	ResetPosition: (self: InterfaceWorksStroke) -> (),
 	Destroy: (self: InterfaceWorksStroke) -> (),
 	GetMouse: (self: InterfaceWorksStroke) -> InterfaceWorksMouse,
 	MaxPointer: (self: InterfaceWorksStroke, callback: (any) -> any) -> (),
 	__Init: () -> (),
-	CurrentPosition: number,
+	CurrentValuePosition: number,
+	Events: { InterfaceWorksWorker },
 	Values: { number: any },
 	TotalValues: number,
 	ID: any,
@@ -78,13 +81,16 @@ export type InterfaceWorksMaterial = InterfaceWorksBase & {
 export type InterfaceWorksWorker = InterfaceWorksBase & {
 
 	Disconnect: (self: InterfaceWorksWorker) -> nil,
+	Destroy: (self: InterfaceWorksWorker) -> nil,
 	SelfProcesses: { RBXScriptConnection | (any) -> any },
 	ChildProcesses: { InterfaceWorksWorker },
 }
 
 export type InterfaceWorksMouse = InterfaceWorksBase & {
 	GetLocation: (self: InterfaceWorksMouse) -> Vector2,
-	Root: InterfaceWorksRoot?,
+	Focused: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
+	FocusLost: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
+	Root: InterfaceWorksStroke,
 }
 
 --INTERNAL CLASSES
@@ -114,6 +120,7 @@ export type InterfaceWorksTicket = InterfaceWorksBase & {
 export type InterfaceWorksElement = {
 
 	ID: string,
+	Key: string?,
 	Type: "Object" | "Property" | "Fragment",
 	Ps: { [string]: any }?,
 	Fs: { [InterfaceWorksInputType | string]: (any) -> any }?,
@@ -126,6 +133,7 @@ export type InterfaceWorksElement = {
 
 export type InterfaceWorksElementData = {
 
+	Key: string?,
 	Properties: {
 		[string]: any,
 	}?,
