@@ -90,8 +90,8 @@ end
 
 function InterfaceWorks.CreateElement(
 	Classname: string,
-	Data: InterfaceWorksElementData,
-	Children
+	Data: InterfaceWorksElementData?,
+	Children: { InterfaceWorksElement? }?
 ): InterfaceWorksElement
 	Data = Data or {}
 	Children = Children or {}
@@ -99,11 +99,11 @@ function InterfaceWorks.CreateElement(
 	local Struct = {
 
 		ID = Classname,
-		Key = Data.Key,
-		Ps = Data.Properties,
-		Fs = Data.Functions,
-		Mt = Data.Material,
-		An = Data.Animation,
+		Key = Data and Data.Key,
+		Ps = Data and Data.Properties,
+		Fs = Data and Data.Functions,
+		Mt = Data and Data.Material,
+		An = Data and Data.Animation,
 		Cn = Children,
 		Type = "Object",
 	}
