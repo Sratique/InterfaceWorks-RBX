@@ -2,7 +2,7 @@
 name = "sratique/interfaceworks"
 description = "Reactive UI library"
 license = "LGPL-2.1"
-version = "0.2.5"
+version = "0.3.1"
 registry = "https://github.com/UpliftGames/wally-index"
 homepage = "https://sratique.github.io/InterfaceWorks-Docs/"
 repository = "https://github.com/Sratique/InterfaceWorks-RBX"

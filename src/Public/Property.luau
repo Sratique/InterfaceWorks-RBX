@@ -1,4 +1,7 @@
-local function AssembleProperty(ID: string, Ps: { [any]: any })
+local types = require("@Root/types")
+type InterfaceWorksElement = types.InterfaceWorksElement
+
+local function AssembleProperty(ID: string, Ps: { [any]: any }): InterfaceWorksElement
 	return {
 
 		ID = ID,
@@ -14,28 +17,25 @@ return {
 		return AssembleProperty("UICorner", { CornerRadius = Offset })
 	end,
 	["Stroke"] = function(
-		Thickness: number,
-		Color: Color3,
-		ApplyStrokeMode: Enum.ApplyStrokeMode,
-		BorderOffset: UDim,
-		BorderStrokePosition: Enum.BorderStrokePosition,
-		LineJoinMode: Enum.LineJoinMode,
-		StrokeSizingMode: Enum.StrokeSizingMode,
-		ZIndex: number
+		Thickness: number?,
+		Color: Color3?,
+		ApplyStrokeMode: Enum.ApplyStrokeMode?,
+		BorderOffset: UDim?,
+		BorderStrokePosition: Enum.BorderStrokePosition?,
+		LineJoinMode: Enum.LineJoinMode?,
+		StrokeSizingMode: Enum.StrokeSizingMode?,
+		ZIndex: number?
 	)
-		return AssembleProperty(
-			"UIStroke",
-			{
-				Thickness = Thickness,
-				Color = Color,
-				ApplyStrokeMode = ApplyStrokeMode,
-				BorderOffset = BorderOffset,
-				BorderStrokePosition = BorderStrokePosition,
-				LineJoinMode = LineJoinMode,
-				StrokeSizingMode = StrokeSizingMode,
-				ZIndex = ZIndex,
-			}
-		)
+		return AssembleProperty("UIStroke", {
+			Thickness = Thickness,
+			Color = Color,
+			ApplyStrokeMode = ApplyStrokeMode,
+			BorderOffset = BorderOffset,
+			BorderStrokePosition = BorderStrokePosition,
+			LineJoinMode = LineJoinMode,
+			StrokeSizingMode = StrokeSizingMode,
+			ZIndex = ZIndex,
+		})
 	end,
 	["Padding"] = function(Padding: UDim)
 		return AssembleProperty("UIPadding", {
@@ -54,10 +54,10 @@ return {
 		})
 	end,
 	["Gradient"] = function(
-		UserColorSequence: ColorSequence,
-		UserTransparency: NumberSequence | number,
-		UserRotation: number,
-		UserOffset: Vector2
+		UserColorSequence: ColorSequence?,
+		UserTransparency: NumberSequence | number?,
+		UserRotation: number?,
+		UserOffset: Vector2?
 	)
 		return AssembleProperty("UIGradient", {
 			Color = UserColorSequence or ColorSequence.new(Color3.new(1, 1, 1)),

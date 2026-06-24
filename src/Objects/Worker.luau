@@ -9,7 +9,7 @@ local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local Worker = {}
 Worker.__index = setmetatable(Worker, BaseObject)
 
-function Worker.New(...): InterfaceWorksWorker
+function Worker.New(...: any): InterfaceWorksWorker
 	local NewBaseObject = BaseObject.New()
 
 	local NewWorker: InterfaceWorksWorker = setmetatable(NewBaseObject, Worker)

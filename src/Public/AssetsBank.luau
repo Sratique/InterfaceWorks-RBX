@@ -11,7 +11,7 @@ Assets.Colors = {
 	Text = Color3.new(1, 1, 1),
 }
 
-local function LoadAssets(AssetsTable, Callback)
+local function LoadAssets(AssetsTable, Callback: () -> ()?)
 	for _, v in pairs(AssetsTable) do
 		if Assets.Loaded[v] then
 			continue
@@ -25,7 +25,7 @@ local function LoadAssets(AssetsTable, Callback)
 	end
 end
 
-function Assets.Preload(AssetID: string, Async: boolean?, Callback: () -> ()): string
+function Assets.Preload(AssetID: string, Async: boolean?, Callback: () -> ()?): string
 	if not Async then
 		task.spawn(function()
 			LoadAssets({ AssetID }, Callback)
@@ -36,7 +36,7 @@ function Assets.Preload(AssetID: string, Async: boolean?, Callback: () -> ()): s
 	return AssetID
 end
 
-function Assets.BulkPreload(AssetsTable: { string }, Async: boolean?, Callback: () -> ()): { [any]: string }
+function Assets.BulkPreload(AssetsTable: { string }, Async: boolean?, Callback: () -> ()?): { [any]: string }
 	if not Async then
 		task.spawn(function()
 			LoadAssets(AssetsTable, Callback)
