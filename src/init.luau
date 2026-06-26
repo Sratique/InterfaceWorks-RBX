@@ -55,12 +55,12 @@ if _G.InterfaceWorksDebug then
 	end
 end
 
-local types = require("@Root/types")
+local types = require("@Root/structs")
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksElementData = types.InterfaceWorksElementData
-type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksElementType = types.InterfaceWorksElementType
 
 local Root = require("@Objects/Root")
 local InputTypes = require("@Root/Public/InputTypesEnums")
@@ -91,10 +91,12 @@ end
 function InterfaceWorks.CreateElement(
 	Classname: string,
 	Data: InterfaceWorksElementData?,
-	Children: { InterfaceWorksElement? }?
+	Children: { [number | string]: InterfaceWorksElement? }?
 ): InterfaceWorksElement
 	Data = Data or {}
 	Children = Children or {}
+
+	local ElementType: InterfaceWorksElementType = "Object"
 
 	local Struct = {
 
@@ -105,7 +107,7 @@ function InterfaceWorks.CreateElement(
 		Mt = Data and Data.Material,
 		An = Data and Data.Animation,
 		Cn = Children,
-		Type = "Object",
+		Type = ElementType,
 	}
 
 	return Struct
@@ -140,9 +142,11 @@ function InterfaceWorks.CreateAnimation(AnimationData: {
 end
 
 function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, ...: any): InterfaceWorksElement
+	local ElementType: InterfaceWorksElementType = "Fragment"
+
 	local Struct = {
 		ID = nil,
-		Type = "Fragment",
+		Type = ElementType,
 		Composition = Composition,
 		FragmentArguments = { ... },
 		Cn = {},

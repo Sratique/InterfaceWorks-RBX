@@ -1,15 +1,27 @@
+--!nonstrict
+
 local TweenService = game:GetService("TweenService")
 
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
+local types = require("@Root/structs")
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksValueID = types.InterfaceWorksValueID
-type InterfaceWorksWorker = types.InterfaceWorksWorker
-type InterfaceWorksObject = types.InterfaceWorksObject
-type InterfaceWorksBase = types.InterfaceWorksBase
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksRenderingSchedule = types.InterfaceWorksRenderingSchedule
-type InterfaceWorksRenderingTicket = types.InterfaceWorksRenderingTicket
+
+local InterfaceWorksStroke = require("@Objects/Stroke")
+type InterfaceWorksStroke = InterfaceWorksStroke.InterfaceWorksStroke
+local InterfaceWorksObject = require("@Objects/Object")
+type InterfaceWorksObject = InterfaceWorksObject.InterfaceWorksObject
+
+type InterfaceWorksRenderingTicket = {
+	Parent: (InterfaceWorksStroke | InterfaceWorksObject)?,
+	Composition: _InterfaceWorksComposition,
+	Arguments: { any }?,
+	ID: string | nil,
+	IsRoot: boolean?,
+	Reuse: Instance?,
+}
+
+export type InterfaceWorksRenderingSchedule = { InterfaceWorksRenderingTicket }
 
 local ComposerScheduler = {}
 ComposerScheduler._VERSION = _G.SchedulerVersion
@@ -18,16 +30,13 @@ local Jobs = require("@Root/Internal/Composer/Jobs")
 local InputTypes = require("@Root/Internal/InputTypesFunctions")
 local InputTypesEnums = require("@Root/Public/InputTypesEnums")
 
-local StrokeObject = require("@Objects/Stroke")
-local Object = require("@Objects/Object")
-
 local function CreateStroke(
 	Render: InterfaceWorksRenderingTicket,
 	Reuse
 ): (InterfaceWorksStroke, { InterfaceWorksElement })
 	local CurrentComposition = Render.Composition
 
-	local NewStroke = StrokeObject.New(CurrentComposition, Render.ID, Reuse)
+	local NewStroke = InterfaceWorksStroke.New(CurrentComposition, Render.ID, Reuse)
 
 	ComposerScheduler.CurrentComposition = NewStroke
 
@@ -40,9 +49,9 @@ end
 local function CreateObject(
 	Element: InterfaceWorksElement,
 	ElementName: string,
-	SourceObject: InterfaceWorksBase
+	SourceObject: InterfaceWorksObject
 ): InterfaceWorksObject
-	local Host: any = Instance.new(Element.ID)
+	local Host: any = Instance.new(Element.ID or "")
 	Host.Name = ElementName
 
 	if Element.Ps then
@@ -51,13 +60,13 @@ local function CreateObject(
 		end
 	end
 
-	local NewElementObject: InterfaceWorksObject = Object.New(Host)
+	local NewElementObject: InterfaceWorksObject = InterfaceWorksObject.New(Host)
 	SourceObject:Insert(NewElementObject, ElementName)
 
 	if Element.Fs then
 		for fndata: string | number, fn: (any) -> any in Element.Fs do
-			if InputTypes[fndata] then
-				local Worker: InterfaceWorksWorker? = InputTypes[fndata](NewElementObject, fn)
+			if typeof(fndata) == "number" and InputTypes[fndata] then
+				local Worker = InputTypes[fndata](NewElementObject, fn)
 
 				if Worker then
 					table.insert(NewElementObject.Workers, Worker)
@@ -133,7 +142,7 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 				local ElementContainer = Children[ChildrenPointer]
 				local Element = ElementContainer
 				local ElementName = ElementContainer.Name
-				local SourceObject: InterfaceWorksBase = ElementContainer.Parent
+				local SourceObject: InterfaceWorksObject = ElementContainer.Parent
 
 				if Element.Type == "Object" then
 					local NewObject = CreateObject(Element, ElementName, SourceObject)
@@ -224,12 +233,12 @@ function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksCom
 				end
 
 				if Element.Type == "Object" then
-					local NewElementObject: InterfaceWorksObject = Object.New(DirtyHost)
+					local NewElementObject: InterfaceWorksObject = InterfaceWorksObject.New(DirtyHost)
 					SourceObject:Insert(NewElementObject, ElementName, true)
 
-					for fndata: string, fn: (any) -> any in Element.Fs or {} do
-						if InputTypes[fndata] then
-							local Worker: InterfaceWorksWorker? = InputTypes[fndata](NewElementObject, fn)
+					for fndata: string | number, fn: (any) -> any in Element.Fs or {} do
+						if typeof(fndata) == "number" and InputTypes[fndata] then
+							local Worker = InputTypes[fndata](NewElementObject, fn)
 
 							if Worker then
 								table.insert(NewElementObject.Workers, Worker)
@@ -316,7 +325,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 			local function CompareChildren(
 				Old: { InterfaceWorksElement },
 				New: { InterfaceWorksElement },
-				ParentObject: InterfaceWorksBase
+				ParentObject: InterfaceWorksObject
 			)
 				for i, v in Old do
 					if v.Key then

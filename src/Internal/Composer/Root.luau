@@ -1,11 +1,14 @@
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
+local types = require("@Root/structs")
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksValueID = types.InterfaceWorksValueID
-type InterfaceWorksWorker = types.InterfaceWorksWorker
-type InterfaceWorksObject = types.InterfaceWorksObject
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksJob = types.InterfaceWorksJob
+
+local InterfaceWorksJob = require("@Objects/Job")
+type InterfaceWorksJob = InterfaceWorksJob.InterfaceWorksJob
+local InterfaceWorksStroke = require("@Objects/Stroke")
+type InterfaceWorksStroke = InterfaceWorksStroke.InterfaceWorksStroke
+local InterfaceWorksTicket = require("@Objects/Ticket")
+type InterfaceWorksTicket = InterfaceWorksTicket.InterfaceWorksTicket
 
 local ComposerRoot = {}
 
@@ -17,7 +20,7 @@ function ComposerRoot.Compose(
 	callback: (InterfaceWorksStroke) -> ()?,
 	ID: string?
 )
-	local Ticket, Existing = Tickets.New("Compose", ID, function(self)
+	local Ticket: InterfaceWorksTicket, Existing = Tickets.New("Compose", ID, function(self)
 		local ComposeJob = Scheduler.Compose_Create(Composition)
 
 		ComposeJob:Finished(function()
@@ -45,6 +48,7 @@ function ComposerRoot.Compose(
 					return
 				end
 				local Dirty: Instance = Stroke.Host:Clone()
+				print(Dirty)
 				Tickets.New("Compose", nil, function()
 					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty)
 
@@ -73,24 +77,29 @@ function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: Interfa
 	local _, Exists = Tickets.ExistsQueue(TicketID)
 
 	if Exists then
+		print("Ticket already exists! Skipping!")
 		return
 	end
 
-	local ParallelTicket, ExistsParallel = Tickets.ExistsParallel(TicketID)
+	local ParallelTicket: InterfaceWorksTicket?, ExistsParallel = Tickets.ExistsParallel(TicketID)
 
-	if ExistsParallel then
+	if ExistsParallel and ParallelTicket then
 		Tickets.Reintroduce(ParallelTicket)
+		return
 	end
 
 	local DiffJob = Scheduler.ReCompose(Stroke)
 
-	Tickets.New("Recompose", TicketID, function(self)
+	Tickets.New("Recompose", TicketID, function(self: InterfaceWorksTicket)
 		Stroke:MaxPointer(function()
 			Tickets.SetParallel()
 		end)
 		DiffJob:Finished(function()
-			Tickets.InvalidateParallel(self.ID)
 			DiffJob:Destroy()
+			if not self.ID then
+				return
+			end
+			Tickets.InvalidateParallel(self.ID)
 		end)
 		DiffJob:Run()
 	end)

@@ -1,14 +1,23 @@
-local types = require("@Root/types")
+local types = require("@Root/structs")
 type InterfaceWorksTicketType = types.InterfaceWorksTicketType
-type InterfaceWorksTicket = types.InterfaceWorksTicket
+
+export type TicketsData = {
+
+	CurrentTicket: InterfaceWorksTicket?,
+	Queue: { InterfaceWorksTicket? },
+	Parallel: { [number | string]: InterfaceWorksTicket? },
+}
+
+local TicketsData: TicketsData = {} :: TicketsData
+TicketsData.CurrentTicket = nil
+TicketsData.Queue = {}
+TicketsData.Parallel = {}
 
 local ComposerTickets = {}
 ComposerTickets._VERSION = _G.TicketsVersion
-ComposerTickets.CurrentTicket = nil
-ComposerTickets.Queue = {}
-ComposerTickets.Parallel = {}
 
-local Ticket = require("@Objects/Ticket")
+local InterfaceWorksTicket = require("@Objects/Ticket")
+type InterfaceWorksTicket = InterfaceWorksTicket.InterfaceWorksTicket
 
 --[[
 
@@ -20,39 +29,41 @@ function ComposerTickets.New(
 	ID: string?,
 	callback: (self: InterfaceWorksTicket) -> ()
 ): (InterfaceWorksTicket, boolean)
-	local ExistingTicket: InterfaceWorksTicket? = ComposerTickets.CurrentTicket
+	local ExistingTicket: InterfaceWorksTicket? = TicketsData.CurrentTicket
 	if ExistingTicket and ExistingTicket.ID ~= nil and ExistingTicket.ID == ID then
 		return ExistingTicket, true
 	end
 
-	for _, v in pairs(ComposerTickets.Queue) do
-		if v.ID == ID then
+	for _, v: InterfaceWorksTicket? in pairs(TicketsData.Queue) do
+		if v and v.ID == ID then
 			return v, true
 		end
 	end
 
-	local ExistingParallel: InterfaceWorksTicket? = ComposerTickets.Parallel[ID]
-	if ExistingParallel then
-		return ExistingParallel, true
+	if ID then
+		local ExistingParallel: InterfaceWorksTicket? = TicketsData.Parallel[ID]
+		if ExistingParallel then
+			return ExistingParallel, true
+		end
 	end
 
-	local CurrentTicket = Ticket.New(ID, callback)
+	local CurrentTicket = InterfaceWorksTicket.New(ID, callback)
 
 	if Type == "Recompose" then
-		table.insert(ComposerTickets.Queue, CurrentTicket)
+		table.insert(TicketsData.Queue, CurrentTicket)
 	elseif Type == "Compose" then
-		table.insert(ComposerTickets.Queue, 1, CurrentTicket)
+		table.insert(TicketsData.Queue, 1, CurrentTicket)
 	else
 		warn("Unknown composer type - InterfaceWorks:Tickets")
 	end
-	if not ComposerTickets.CurrentTicket then
+	if not TicketsData.CurrentTicket then
 		ComposerTickets.Next()
 	end
 	return CurrentTicket, false
 end
 
 function ComposerTickets.ExistsParallel(ID: string): (InterfaceWorksTicket?, boolean)
-	local ExistingParallel: InterfaceWorksTicket? = ComposerTickets.Parallel[ID]
+	local ExistingParallel: InterfaceWorksTicket? = TicketsData.Parallel[ID]
 	if ExistingParallel then
 		return ExistingParallel, true
 	end
@@ -60,47 +71,64 @@ function ComposerTickets.ExistsParallel(ID: string): (InterfaceWorksTicket?, boo
 end
 
 function ComposerTickets.ExistsQueue(ID: string): (InterfaceWorksTicket?, boolean)
-	local ExistingTicket: InterfaceWorksTicket? = ComposerTickets.CurrentTicket
+	local ExistingTicket: InterfaceWorksTicket? = TicketsData.CurrentTicket
 	if ExistingTicket and ExistingTicket.ID ~= nil and ExistingTicket.ID == ID then
 		return ExistingTicket, true
 	end
 
-	for _, v in pairs(ComposerTickets.Queue) do
-		if v.ID == ID then
+	for _, v in pairs(TicketsData.Queue) do
+		if v and v.ID == ID then
 			return v, true
 		end
 	end
 	return nil, false
 end
 
-function ComposerTickets.Reintroduce(CurrentTicket)
-	ComposerTickets.Parallel[CurrentTicket.ID] = nil
-	table.insert(ComposerTickets.Queue, 1, CurrentTicket)
-	if not ComposerTickets.CurrentTicket then
+function ComposerTickets.Reintroduce(CurrentTicket: InterfaceWorksTicket)
+	if not CurrentTicket.ID then
+		return
+	end
+	TicketsData.Parallel[CurrentTicket.ID] = nil
+	table.insert(TicketsData.Queue, 1, CurrentTicket)
+	if not TicketsData.CurrentTicket then
 		ComposerTickets.Next()
 	end
 end
 
 function ComposerTickets.SetParallel()
-	ComposerTickets.Parallel[ComposerTickets.CurrentTicket.ID] = ComposerTickets.CurrentTicket
+	if not TicketsData.CurrentTicket or not TicketsData.CurrentTicket.ID then
+		return
+	end
 
-	ComposerTickets.CurrentTicket = nil
+	TicketsData.Parallel[TicketsData.CurrentTicket.ID] = TicketsData.CurrentTicket
 
-	if #ComposerTickets.Queue > 0 then
+	TicketsData.CurrentTicket = nil
+
+	if #TicketsData.Queue > 0 then
 		ComposerTickets.Next()
 	end
 end
 
 function ComposerTickets.InvalidateParallel(TicketID: string)
-	ComposerTickets.Parallel[TicketID]:Destroy()
-	ComposerTickets.Parallel[TicketID] = nil
+	local Ticket = TicketsData.Parallel[TicketID]
+
+	if not Ticket then
+		return
+	end
+
+	Ticket:Destroy()
+	TicketsData.Parallel[TicketID] = nil
 end
 
 function ComposerTickets.Invalidate()
-	local TempTicket = ComposerTickets.CurrentTicket
-	ComposerTickets.CurrentTicket = nil
+	if not TicketsData.CurrentTicket then
+		return
+	end
 
-	if #ComposerTickets.Queue > 0 then
+	local TempTicket = TicketsData.CurrentTicket
+	TicketsData.CurrentTicket = nil
+
+	if #TicketsData.Queue > 0 then
 		ComposerTickets.Next()
 	end
 
@@ -108,10 +136,13 @@ function ComposerTickets.Invalidate()
 end
 
 function ComposerTickets.Next()
-	ComposerTickets.CurrentTicket = ComposerTickets.Queue[1]
-	table.remove(ComposerTickets.Queue, 1)
-	local ExistingTicket: InterfaceWorksTicket = ComposerTickets.CurrentTicket
-	ExistingTicket.Job()
+	local CurrentTicket = TicketsData.Queue[1]
+	if not CurrentTicket then
+		return
+	end
+	TicketsData.CurrentTicket = CurrentTicket
+	table.remove(TicketsData.Queue, 1)
+	CurrentTicket.Job()
 end
 
 return ComposerTickets

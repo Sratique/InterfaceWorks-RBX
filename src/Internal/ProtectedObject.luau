@@ -9,7 +9,7 @@ function ProtectedObject.GetProxy(ProxyID: string) -- Returns a proxy that is us
 	return Proxies[ProxyID]
 end
 
-function ProtectedObject.LayerInheritance(CurrentObject, DesiredClass: string)
+function ProtectedObject.LayerInheritance(CurrentObject: any, DesiredClass: string)
 	local RootProperties = ProtectedObject.GetProxy("RootProperties")
 
 	local OldClass = CurrentObject[RootProperties].ClassName or "BaseObject"

@@ -1,15 +1,27 @@
-local types = require("@Root/types")
-type InterfaceWorksJob = types.InterfaceWorksJob
-
 local BaseObject = require("@BaseObject")
 
 local JobObject = {}
 JobObject.__index = setmetatable(JobObject, BaseObject)
 
+export type InterfaceWorksJob =
+	BaseObject.InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
+
+			Environment: { [any]: any },
+			Current: thread?,
+			Function: (Environment: { [any]: any }, ...any) -> (),
+			FinishedConnections: { () -> () },
+			Arguments: { [any]: any },
+			Init: boolean,
+		},
+		JobObject
+	))
+
 function JobObject.New(Function: (Environment: { [any]: any }, ...any) -> ()): InterfaceWorksJob
 	local NewBaseObject = BaseObject.New()
 
-	local NewJobObject = setmetatable(NewBaseObject, JobObject)
+	local NewJobObject = setmetatable(NewBaseObject :: InterfaceWorksJob, JobObject)
 
 	NewJobObject.Function = Function
 	NewJobObject.FinishedConnections = {}
@@ -45,7 +57,7 @@ function JobObject:Run(...: any)
 
 	self.Init = true
 
-	self.Current = task.spawn(coroutine.create(function()
+	self.Current = task.defer(coroutine.create(function()
 		self.Function(self.Environment, unpack(self.Arguments))
 		for _, v in pairs(self.FinishedConnections) do
 			v()

@@ -1,5 +1,5 @@
-local types = require("@Root/types")
-type InterfaceWorksWorker = types.InterfaceWorksWorker
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
 
 local ComposerEvents = {}
 

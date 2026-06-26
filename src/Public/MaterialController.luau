@@ -1,8 +1,8 @@
-local types = require("@Root/types")
-type InterfaceWorksMaterial = types.InterfaceWorksMaterial
-type InterfaceWorksObject = types.InterfaceWorksObject
+local InterfaceWorksObject = require("@Objects/Object")
+type InterfaceWorksObject = InterfaceWorksObject.InterfaceWorksObject
 
-local MaterialObject = require("@Root/Objects/Material")
+local InterfaceWorksMaterial = require("@Root/Objects/Material")
+type InterfaceWorksMaterial = InterfaceWorksMaterial.InterfaceWorksMaterial
 
 local Materials = {}
 
@@ -11,7 +11,7 @@ function Materials.New(
 	Reactivity: (InterfaceWorksObject) -> ...() -> (),
 	ConstantReactivity: (InterfaceWorksObject) -> ()?
 ): InterfaceWorksMaterial
-	local NewMaterialObject = MaterialObject.New(DefaultProperties, Reactivity, ConstantReactivity)
+	local NewMaterialObject = InterfaceWorksMaterial.New(DefaultProperties, Reactivity, ConstantReactivity)
 
 	return NewMaterialObject
 end

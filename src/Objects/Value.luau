@@ -1,7 +1,5 @@
-local types = require("@Root/types")
-type InterfaceWorksValue = types.InterfaceWorksValue
-
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
@@ -30,10 +28,24 @@ ValueObject.__newindex = function(self, key, value)
 	rawset(self, key, value)
 end
 
-function ValueModule.New(DefaultValue: number): InterfaceWorksValue
-	local NewBaseObject = BaseObject.New()
+export type InterfaceWorksValue =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
 
-	local NewValue = setmetatable(NewBaseObject, ValueObject)
+			ChangeFunctions: { () -> () },
+			ID: number,
+			__Value: any,
+			OnChange: (self: InterfaceWorksValue, func: () -> ()) -> ...any,
+			Set: (self: InterfaceWorksValue, NewValue: any) -> ...any,
+		},
+		ValueObject
+	))
+
+function ValueModule.New(DefaultValue: number): InterfaceWorksValue
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New()
+
+	local NewValue: InterfaceWorksValue = setmetatable(NewBaseObject :: InterfaceWorksValue, ValueObject)
 
 	ProtectedObject.LayerInheritance(NewValue, "InterfaceWorksValue")
 

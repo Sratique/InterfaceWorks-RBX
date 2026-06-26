@@ -1,15 +1,25 @@
-local types = require("@Root/types")
-type InterfaceWorksTicket = types.InterfaceWorksTicket
-
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
 
 local TicketObject = {}
 TicketObject.__index = setmetatable(TicketObject, BaseObject)
 
-function TicketObject.New(ID: string?, Job: (self: InterfaceWorksTicket) -> ()): InterfaceWorksTicket
-	local NewBaseObject = BaseObject.New()
+export type InterfaceWorksTicket =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
 
-	local NewTicketObject = setmetatable(NewBaseObject, TicketObject)
+			ID: string?,
+			Job: () -> (),
+			Environment: { [any]: any },
+		},
+		TicketObject
+	))
+
+function TicketObject.New(ID: string?, Job: (self: InterfaceWorksTicket) -> ()): InterfaceWorksTicket
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New()
+
+	local NewTicketObject: InterfaceWorksTicket = setmetatable(NewBaseObject :: InterfaceWorksTicket, TicketObject)
 
 	NewTicketObject.ID = ID
 

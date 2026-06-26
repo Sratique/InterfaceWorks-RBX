@@ -1,10 +1,11 @@
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
-type InterfaceWorksRoot = types.InterfaceWorksRoot
+local types = require("@Root/structs")
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
 type InterfaceWorksRootArguements = types.InterfaceWorksRootArguments
 
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksStroke = require("@Objects/Stroke")
+type InterfaceWorksStroke = InterfaceWorksStroke.InterfaceWorksStroke
 
 local Composer = require("@Root/Internal/Composer")
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
@@ -12,10 +13,12 @@ local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local TreeRoot = {}
 TreeRoot.__index = setmetatable(TreeRoot, BaseObject)
 
-function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
-	local NewBaseObject = BaseObject.New(SourceInstance)
+export type InterfaceWorksRoot = InterfaceWorksBase & typeof(setmetatable({}, TreeRoot))
 
-	local NewTreeRoot = setmetatable(NewBaseObject, TreeRoot)
+function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New(SourceInstance)
+
+	local NewTreeRoot: InterfaceWorksRoot = setmetatable(NewBaseObject :: InterfaceWorksRoot, TreeRoot)
 
 	ProtectedObject.LayerInheritance(NewTreeRoot, "InterfaceWorksRoot")
 

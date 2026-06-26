@@ -1,7 +1,5 @@
-local types = require("@Root/types")
-type InterfaceWorksValue = types.InterfaceWorksValue
-
-local ValueClass = require("@Objects/Value")
+local InterfaceWorksValue = require("@Objects/Value")
+type InterfaceWorksValue = InterfaceWorksValue.InterfaceWorksValue
 local Composer = require("@Root/Internal/Composer")
 
 local Value = {}
@@ -16,7 +14,7 @@ function Value.New(default: any): InterfaceWorksValue
 		return Exists
 	end
 
-	local NewValue: InterfaceWorksValue = ValueClass.New(default)
+	local NewValue: InterfaceWorksValue = InterfaceWorksValue.New(default)
 
 	Composer.Value.IndexValue(NewValue)
 

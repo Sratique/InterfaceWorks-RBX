@@ -1,10 +1,13 @@
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
-type InterfaceWorksValue = types.InterfaceWorksValue
-type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksWorker = types.InterfaceWorksWorker
+local structs = require("@Root/structs")
+type _InterfaceWorksComposition = structs._InterfaceWorksComposition
+type InterfaceWorksElement = structs.InterfaceWorksElement
 
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
+local InterfaceWorksValue = require("@Objects/Value")
+type InterfaceWorksValue = InterfaceWorksValue.InterfaceWorksValue
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local RootProperties = ProtectedObject.GetProxy("RootProperties")
@@ -13,17 +16,35 @@ local Mouse = require("./Mouse")
 local Stroke = {}
 Stroke.__index = setmetatable(Stroke, BaseObject)
 
-function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse: Instance?): InterfaceWorksStroke
-	local VirtualHost = Reuse or Instance.new("Frame")
+export type InterfaceWorksStroke =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
+
+			CurrentValuePosition: number,
+			CurrentEventPosition: number,
+			Events: { InterfaceWorksWorker },
+			Values: { any },
+			TotalValues: number,
+			ID: any,
+			RetracingComposition: _InterfaceWorksComposition,
+			CurrentComposition: { InterfaceWorksElement }?,
+			Host: Frame,
+		},
+		Stroke
+	))
+
+function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse: Frame?): InterfaceWorksStroke
+	local VirtualHost: Frame = Reuse or Instance.new("Frame")
 	if not Reuse then
 		VirtualHost.Size = UDim2.fromScale(1, 1)
 		VirtualHost.BackgroundTransparency = 1
 		VirtualHost.Name = ID or "Stroke"
 	end
 
-	local NewBaseObject = BaseObject.New(VirtualHost)
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New(VirtualHost)
 
-	local NewStroke = setmetatable(NewBaseObject, Stroke)
+	local NewStroke = setmetatable(NewBaseObject :: InterfaceWorksStroke, Stroke)
 
 	NewStroke.Values = {}
 	NewStroke.TotalValues = 0
@@ -75,7 +96,7 @@ function Stroke:GetCurrentEvent()
 	return self.Events[self.CurrentEventPosition]
 end
 
-function Stroke:InsertValue(Value: InterfaceWorksValue)
+function Stroke.InsertValue(self: InterfaceWorksStroke, Value: InterfaceWorksValue)
 	self.TotalValues += 1
 	local ID = #self.Values + 1
 	Value.ID = ID
@@ -121,7 +142,7 @@ function Stroke:Destroy()
 end
 
 function Stroke:GetMouse()
-	self.Mouse = self.Mouse or Mouse.New(self)
+	self.Mouse = self.Mouse or Mouse.New(self.Host)
 	return self.Mouse
 end
 

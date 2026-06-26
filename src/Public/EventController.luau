@@ -1,7 +1,5 @@
-local types = require("@Root/types")
-type InterfaceWorksWorker = types.InterfaceWorksWorker
-
-local WorkerClass = require("@Objects/Worker")
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
 local Composer = require("@Root/Internal/Composer")
 
 local Event = {}
@@ -13,7 +11,7 @@ function Event.New(Event: () -> () -> ()): InterfaceWorksWorker
 		return Exists
 	end
 
-	local NewEvent = WorkerClass.New(Event())
+	local NewEvent = InterfaceWorksWorker.New(Event())
 
 	Composer.Event.IndexEvent(NewEvent)
 

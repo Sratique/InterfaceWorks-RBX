@@ -14,5 +14,5 @@ To build a binary Yourself, You will need:
 All the build properties files are in the repo.
 
 ## Disclaimer
-This is **NOT** meant to replace Roblox React, at least as of right now.
-> This is a solo dev project so please be patient for any bug fixes or feature updates.
+This library is still under heavy development. APIs might break, get deprecated or removed altogether.
+The documentation page is also not finished and might not reflect the actual state of the library immediately after every update.

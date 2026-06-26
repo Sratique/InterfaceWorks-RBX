@@ -1,9 +1,12 @@
-local types = require("@Root/types")
-type InterfaceWorksObject = types.InterfaceWorksObject
-type InterfaceWorksWorker = types.InterfaceWorksWorker
-type InterfaceWorksStroke = types.InterfaceWorksStroke
+local types = require("@Root/structs")
+type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
 
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksStroke = require("@Objects/Stroke")
+type InterfaceWorksStroke = InterfaceWorksStroke.InterfaceWorksStroke
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local RootProperties = ProtectedObject.GetProxy("RootProperties")
@@ -11,10 +14,21 @@ local RootProperties = ProtectedObject.GetProxy("RootProperties")
 local Object = {}
 Object.__index = setmetatable(Object, BaseObject)
 
-function Object.New(SourceInstance: Instance): InterfaceWorksObject
-	local NewBaseObject = BaseObject.New(SourceInstance)
+export type InterfaceWorksObject =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
 
-	local NewObject = setmetatable(NewBaseObject, Object)
+			Workers: { InterfaceWorksWorker },
+			Animations: { InterfaceWorksAnimationData },
+		},
+		Object
+	))
+
+function Object.New(SourceInstance: Instance): InterfaceWorksObject
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New(SourceInstance)
+
+	local NewObject = setmetatable(NewBaseObject :: InterfaceWorksObject, Object)
 
 	ProtectedObject.LayerInheritance(NewObject, "InterfaceWorksObject")
 

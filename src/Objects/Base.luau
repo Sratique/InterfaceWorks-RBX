@@ -4,8 +4,18 @@ local RootProperties = ProtectedObject.GetProxy("RootProperties")
 local BaseObject = {}
 BaseObject.__index = BaseObject
 
-function BaseObject.New(SourceInstance: Instance?)
-	local NewBaseObject = setmetatable({}, BaseObject)
+export type InterfaceWorksBase = typeof(setmetatable(
+	{} :: {
+
+		Parent: InterfaceWorksBase?,
+		Host: any?,
+		Name: any?,
+	},
+	BaseObject
+))
+
+function BaseObject.New(SourceInstance: Instance?): InterfaceWorksBase
+	local NewBaseObject: InterfaceWorksBase = setmetatable({}, BaseObject)
 
 	NewBaseObject[RootProperties] = {}
 	NewBaseObject[RootProperties].Children = {}
@@ -17,15 +27,15 @@ function BaseObject.New(SourceInstance: Instance?)
 	return NewBaseObject
 end
 
-function BaseObject:__Remove(index: number | string)
+function BaseObject.__Remove(self: InterfaceWorksBase, index: number | string)
 	self[index] = nil
 	if self[RootProperties].Children[index] then
 		self[RootProperties].Children[index] = nil
 	end
 end
 
-function BaseObject:__Destroy()
-	for _, v in pairs(self:GetChildren()) do
+function BaseObject.__Destroy(self: InterfaceWorksBase)
+	for _, v: InterfaceWorksBase in pairs(self:GetChildren()) do
 		v:Destroy()
 	end
 
@@ -33,16 +43,13 @@ function BaseObject:__Destroy()
 		v()
 	end
 
-	if self.Parent then
+	if self.Parent and self.Name then
 		self.Parent:__Remove(self.Name)
 	end
 
 	if self.Host then
 		self.Host:Destroy()
 	end
-
-	setmetatable(self, nil)
-	table.clear(self)
 end
 
 function BaseObject:IsA(ClassName: string)
@@ -62,7 +69,12 @@ function BaseObject:Destroying(callback: () -> ())
 	table.insert(self[RootProperties].Destroying, callback)
 end
 
-function BaseObject:Insert(Object, ID: string | number | string? | nil, SkipHost: boolean?)
+function BaseObject.Insert(
+	self: any,
+	Object: InterfaceWorksBase,
+	ID: string | number | string? | nil,
+	SkipHost: boolean?
+)
 	table.insert(self[RootProperties].Children, Object) -- add to the internal table so that the getchildren function will also return this object
 
 	Object[RootProperties].TreeRoot = if self[RootProperties].TreeRoot
@@ -82,6 +94,10 @@ function BaseObject:Insert(Object, ID: string | number | string? | nil, SkipHost
 	if Object.Host and self.Host and not SkipHost then -- actually kinda like parent it finally if skiphost is false
 		Object.Host.Parent = self.Host
 	end
+end
+
+function BaseObject.Destroy(self: InterfaceWorksBase)
+	self:__Destroy()
 end
 
 return BaseObject
