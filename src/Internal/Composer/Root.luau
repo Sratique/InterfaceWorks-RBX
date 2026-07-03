@@ -18,10 +18,11 @@ local Scheduler = require("./Scheduler")
 function ComposerRoot.Compose(
 	Composition: _InterfaceWorksComposition,
 	callback: (InterfaceWorksStroke) -> ()?,
-	ID: string?
+	ID: string?,
+	StrokeArguments: { any }?
 )
 	local Ticket: InterfaceWorksTicket, Existing = Tickets.New("Compose", ID, function(self)
-		local ComposeJob = Scheduler.Compose_Create(Composition)
+		local ComposeJob = Scheduler.Compose_Create(Composition, StrokeArguments)
 
 		ComposeJob:Finished(function()
 			local NewStroke = ComposeJob.Environment.Stroke
@@ -48,9 +49,8 @@ function ComposerRoot.Compose(
 					return
 				end
 				local Dirty: Instance = Stroke.Host:Clone()
-				print(Dirty)
 				Tickets.New("Compose", nil, function()
-					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty)
+					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty, StrokeArguments)
 
 					DirtyComposeJob:Finished(function()
 						Tickets.Invalidate()
@@ -77,7 +77,6 @@ function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: Interfa
 	local _, Exists = Tickets.ExistsQueue(TicketID)
 
 	if Exists then
-		print("Ticket already exists! Skipping!")
 		return
 	end
 

@@ -16,6 +16,6 @@ function Materials.New(
 	return NewMaterialObject
 end
 
-function Materials.Remove() end
+--function Materials.Remove() end
 
 return Materials

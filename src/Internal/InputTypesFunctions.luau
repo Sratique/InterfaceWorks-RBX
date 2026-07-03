@@ -1,3 +1,5 @@
+--!nocheck
+
 local InterfaceWorksObject = require("@Objects/Object")
 type InterfaceWorksObject = InterfaceWorksObject.InterfaceWorksObject
 

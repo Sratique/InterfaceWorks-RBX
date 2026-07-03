@@ -5,7 +5,7 @@ local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local ValueModule = {}
 local ValueObject = {}
-ValueObject.__index = function(self, key)
+ValueObject.__index = function(self, key): any
 	if key == "Value" then
 		return rawget(self, "__Value")
 	end

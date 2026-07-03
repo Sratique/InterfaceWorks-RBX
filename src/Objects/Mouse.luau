@@ -21,7 +21,7 @@ export type InterfaceWorksMouse =
 	InterfaceWorksBase
 	& typeof(setmetatable(
 		{} :: {
-
+			Host: DockWidgetPluginGui,
 			Root: Frame,
 		},
 		{} :: typeof(MouseShared) & {

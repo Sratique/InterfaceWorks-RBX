@@ -106,13 +106,13 @@ local function CreateObject(
 	return NewElementObject
 end
 
-function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksComposition)
+function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksComposition, StartingArguments: { any }?)
 	return Jobs.CreateJob(function(Environment)
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
 				["Parent"] = nil,
 				["Composition"] = StartingComposition,
-				["Arguments"] = {},
+				["Arguments"] = StartingArguments,
 				["ID"] = nil,
 				["IsRoot"] = true,
 			},
@@ -182,13 +182,17 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 	end)
 end
 
-function ComposerScheduler.Compose_Reuse(StartingComposition: _InterfaceWorksComposition, Reuse: Instance)
+function ComposerScheduler.Compose_Reuse(
+	StartingComposition: _InterfaceWorksComposition,
+	Reuse: Instance,
+	StartingArguments: { any }?
+)
 	return Jobs.CreateJob(function(Environment)
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
 				["Parent"] = nil,
 				["Composition"] = StartingComposition,
-				["Arguments"] = {},
+				["Arguments"] = StartingArguments,
 				["ID"] = nil,
 				["IsRoot"] = true,
 				["Reuse"] = Reuse,

@@ -5,7 +5,7 @@ local Composer = require("@Root/Internal/Composer")
 local Value = {}
 Value.Globals = {}
 
-function Value.NewGlobal() end
+--function Value.NewGlobal() end
 
 function Value.New(default: any): InterfaceWorksValue
 	local Exists: InterfaceWorksValue? = Composer.Value.NextValue()

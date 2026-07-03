@@ -1,6 +1,6 @@
 local types = require("@Root/structs")
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksRootArguements = types.InterfaceWorksRootArguments
+type InterfaceWorksRootArguments = types.InterfaceWorksRootArguments
 
 local BaseObject = require("@BaseObject")
 type InterfaceWorksBase = BaseObject.InterfaceWorksBase
@@ -25,7 +25,7 @@ function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
 	return NewTreeRoot
 end
 
-function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: InterfaceWorksRootArguements)
+function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: InterfaceWorksRootArguments, ...: any?)
 	Arguments = Arguments or {}
 
 	local SID = Arguments.StrokeID
@@ -34,7 +34,7 @@ function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: Int
 		ComposedStroke.Host.Name = SID or "Main"
 
 		self:Insert(ComposedStroke, SID or "Main")
-	end, CID)
+	end, CID, { ... })
 end
 
 function TreeRoot:Destroy()

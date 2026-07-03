@@ -35,6 +35,9 @@
       rule: "inject_global_value",
       identifier: "TicketsVersion",
       value: "0.0.4",
+    },
+    {
+      rule: "compute_expression"
     }
   ]
 }

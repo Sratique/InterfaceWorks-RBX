@@ -19,6 +19,7 @@ export type InterfaceWorksObject =
 	& typeof(setmetatable(
 		{} :: {
 
+			Host: any,
 			Workers: { InterfaceWorksWorker },
 			Animations: { InterfaceWorksAnimationData },
 		},
@@ -28,7 +29,7 @@ export type InterfaceWorksObject =
 function Object.New(SourceInstance: Instance): InterfaceWorksObject
 	local NewBaseObject: InterfaceWorksBase = BaseObject.New(SourceInstance)
 
-	local NewObject = setmetatable(NewBaseObject :: InterfaceWorksObject, Object)
+	local NewObject: InterfaceWorksObject = setmetatable(NewBaseObject :: InterfaceWorksObject, Object)
 
 	ProtectedObject.LayerInheritance(NewObject, "InterfaceWorksObject")
 
