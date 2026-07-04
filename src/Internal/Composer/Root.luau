@@ -70,9 +70,9 @@ function ComposerRoot.Compose(
 	end
 end
 
-function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: InterfaceWorksValueID, Arguments: { any }?)
+function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: InterfaceWorksValueID?, Arguments: { any }?)
 	local StrokeID = tostring(Stroke.ID)
-	local TicketID = StrokeID .. Initiator
+	local TicketID = StrokeID .. (Initiator or "")
 
 	local _, Exists = Tickets.ExistsQueue(TicketID)
 

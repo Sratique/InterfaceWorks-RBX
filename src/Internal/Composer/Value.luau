@@ -18,7 +18,7 @@ function ComposerValues.IndexValue(ValueObject: InterfaceWorksValue)
 	local CurrentComposition = ComposerScheduler.CurrentComposition
 
 	ValueObject:OnChange(function()
-		ComposerRoot.ReCompose(CurrentComposition, ValueObject.ID)
+		ComposerRoot.ReCompose(CurrentComposition)
 	end)
 
 	CurrentComposition:InsertValue(ValueObject)
