@@ -42,6 +42,7 @@ local function CreateStroke(
 
 	local NewBuild = CurrentComposition(unpack(Render.Arguments or {}))
 	NewStroke.CurrentComposition = NewBuild
+	NewStroke.SelfArguments = Render.Arguments
 
 	return NewStroke, NewBuild
 end
@@ -305,16 +306,15 @@ function ComposerScheduler.Compose_Reuse(
 end
 
 function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
-	return Jobs.CreateJob(function(Environment: { [string]: { any } })
+	return Jobs.CreateJob(function()
 		local Strokes = { Init }
 		for _, Stroke in Strokes do
 			ComposerScheduler.CurrentComposition = Stroke
 
 			Stroke:ResetPosition()
 
-			local OldBuild = Environment.Last or Stroke.CurrentComposition
-			local NewBuild = Stroke.RetracingComposition()
-			Environment.Last = NewBuild
+			local OldBuild = Stroke.CurrentComposition
+			local NewBuild = Stroke.RetracingComposition(unpack(Stroke.SelfArguments or {}))
 
 			local Children: {
 				InterfaceWorksElement & {
@@ -331,33 +331,38 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 				New: { InterfaceWorksElement },
 				ParentObject: InterfaceWorksObject
 			)
+				local KeyedOld = {}
+				local KeyedNew = {}
+
 				for i, v in Old do
 					if v.Key then
-						Old[v.Key] = v
-						Old[i] = nil
+						KeyedOld[v.Key] = v
+						continue
 					end
+					KeyedOld[i] = v
 				end
 
 				for i, v in New do
 					if v.Key then
-						New[v.Key] = v
-						New[i] = nil
+						KeyedNew[v.Key] = v
+						continue
 					end
+					KeyedNew[i] = v
 				end
 
-				for i: number, InterfaceWorksElement in New do
-					if Old[i] == nil then
+				for i: number, InterfaceWorksElement in KeyedNew do
+					if KeyedOld[i] == nil then
 						InterfaceWorksElement["Name"] = i
 						InterfaceWorksElement["ParentObject"] = ParentObject
 						table.insert(Children, InterfaceWorksElement)
 					elseif InterfaceWorksElement.Type ~= "Property" then
 						InterfaceWorksElement["Object"] = ParentObject[i]
-						InterfaceWorksElement["Old"] = Old[i]
+						InterfaceWorksElement["Old"] = KeyedOld[i]
 						table.insert(Children, InterfaceWorksElement)
 					end
 				end
-				for i: number, InterfaceWorksElement in Old do
-					if New[i] == nil then
+				for i: number, InterfaceWorksElement in KeyedOld do
+					if KeyedNew[i] == nil then
 						local OldInstance: any = ParentObject[i]
 						OldInstance:Destroy()
 					end
@@ -367,8 +372,6 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 			CompareChildren(OldBuild, NewBuild, Stroke)
 
 			local Pointer = 0
-
-			Environment.Changes = Environment.Changes or {}
 
 			while #Children ~= Pointer do
 				Pointer += 1
@@ -382,16 +385,11 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 					or CreateObject(CurrentElement, CurrentStruct.Name, CurrentStruct.ParentObject)
 				local ElementInstance = ElementObject.Host
 
-				if
-					CurrentElement.Type == "Object" and Environment.Changes[ElementInstance] == nil
-					or Environment.Changes[ElementInstance] == true
-				then
+				if CurrentElement.Type == "Object" then
 					if OldElement then
-						Environment.Changes[ElementInstance] = false
 						for prop, val in CurrentElement.Ps or {} do
 							if OldElement.Ps[prop] ~= val then
 								ElementInstance[prop] = val
-								Environment.Changes[ElementInstance] = true
 							end
 						end
 
@@ -427,12 +425,12 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 						for dt, val in pairs(CurrentElement.FragmentArguments or {}) do
 							if OldElement.FragmentArguments[dt] ~= val then
 								table.insert(Strokes, ElementObject)
+								ElementObject.SelfArguments = CurrentElement.FragmentArguments
 								break
 							elseif typeof(val) == "table" then
-								if getmetatable(val) then
-									table.insert(Strokes, ElementObject)
-									break
-								end
+								table.insert(Strokes, ElementObject)
+								ElementObject.SelfArguments = CurrentElement.FragmentArguments
+								break
 							end
 						end
 					else
@@ -441,6 +439,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 				end
 			end
 
+			--Wrap things up for this stroke
 			Stroke.CurrentComposition = NewBuild
 		end
 	end)

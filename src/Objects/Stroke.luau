@@ -28,6 +28,7 @@ export type InterfaceWorksStroke =
 			TotalValues: number,
 			ID: any,
 			RetracingComposition: _InterfaceWorksComposition,
+			SelfArguments: { any }?,
 			CurrentComposition: { InterfaceWorksElement }?,
 			Host: Frame,
 		},
