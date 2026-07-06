@@ -9,6 +9,10 @@ local ComposerRoot = require("./Root")
 local ComposerScheduler = require("./Scheduler")
 
 function ComposerValues.NextValue(): InterfaceWorksValue?
+	if not ComposerScheduler.CurrentComposition then
+		return
+	end
+
 	return ComposerScheduler.CurrentComposition:GetCurrentValue()
 end
 

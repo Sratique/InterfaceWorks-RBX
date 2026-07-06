@@ -6,6 +6,10 @@ local ComposerEvents = {}
 local ComposerScheduler = require("./Scheduler")
 
 function ComposerEvents.NextEvent(): InterfaceWorksWorker?
+	if not ComposerScheduler.CurrentComposition then
+		return
+	end
+
 	return ComposerScheduler.CurrentComposition:GetCurrentEvent()
 end
 

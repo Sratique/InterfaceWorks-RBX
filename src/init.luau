@@ -60,6 +60,7 @@ type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksElementData = types.InterfaceWorksElementData
 type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksAnimationType = types.InterfaceWorksAnimationType
 type InterfaceWorksElementType = types.InterfaceWorksElementType
 
 local Root = require("@Objects/Root")
@@ -106,7 +107,7 @@ function InterfaceWorks.CreateElement(
 		Fs = Data and Data.Functions,
 		Mt = Data and Data.Material,
 		An = Data and Data.Animation,
-		Cn = Children,
+		Cn = Children or {},
 		Type = ElementType,
 	}
 
@@ -115,6 +116,7 @@ end
 
 function InterfaceWorks.CreateAnimation(AnimationData: {
 	Goals: { [string]: any },
+	Type: InterfaceWorksAnimationType?,
 	BeginningPoint: { any }?,
 	BeginningPointRepeats: boolean?,
 	Duration: number,
@@ -124,10 +126,13 @@ function InterfaceWorks.CreateAnimation(AnimationData: {
 	Reverses: boolean?,
 	delayTime: number?,
 }): InterfaceWorksAnimationData
+	local DefaultAnimationType: InterfaceWorksAnimationType = "Default"
+
 	local NewAnimationData = {
 		Goals = AnimationData.Goals,
 		BeginningPoint = AnimationData.BeginningPoint,
 		BeginningPointRepeats = AnimationData.BeginningPointRepeats,
+		Type = AnimationData.Type or DefaultAnimationType,
 		TI = TweenInfo.new(
 			AnimationData.Duration,
 			AnimationData.EasingStyle or Enum.EasingStyle.Linear,

@@ -11,7 +11,7 @@ export type InterfaceWorksElement = {
 	Type: InterfaceWorksElementType,
 	Ps: { [string]: any }?,
 	Fs: { [InterfaceWorksInputType | string]: (any) -> any }?,
-	Cn: { [string | number]: InterfaceWorksElement? }?,
+	Cn: { [string | number]: InterfaceWorksElement? },
 	Mt: any?,
 	An: InterfaceWorksAnimationData?,
 	Composition: _InterfaceWorksComposition?,
@@ -31,10 +31,13 @@ export type InterfaceWorksElementData = {
 	Animation: InterfaceWorksAnimationData?,
 }
 
+export type InterfaceWorksAnimationType = "Default"
+
 export type InterfaceWorksAnimationData = {
 	Goals: { [string]: any },
 	BeginningPoint: { any }?,
 	BeginningPointRepeats: boolean?,
+	Type: InterfaceWorksAnimationType,
 	TI: TweenInfo,
 }
 

@@ -35,12 +35,16 @@ export type InterfaceWorksStroke =
 		Stroke
 	))
 
-function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse: Frame?): InterfaceWorksStroke
+function Stroke.New(
+	Composition: _InterfaceWorksComposition,
+	ID: (string | number)?,
+	Reuse: Frame?
+): InterfaceWorksStroke
 	local VirtualHost: Frame = Reuse or Instance.new("Frame")
 	if not Reuse then
 		VirtualHost.Size = UDim2.fromScale(1, 1)
 		VirtualHost.BackgroundTransparency = 1
-		VirtualHost.Name = ID or "Stroke"
+		VirtualHost.Name = tostring(ID or "Stroke")
 	end
 
 	local NewBaseObject: InterfaceWorksBase = BaseObject.New(VirtualHost)

@@ -24,17 +24,17 @@
     {
       rule: "inject_global_value",
       identifier: "SchedulerVersion",
-      value: "0.0.4",
+      value: "0.0.5",
     },
     {
       rule: "inject_global_value",
       identifier: "JobsVersion",
-      value: "0.0.2",
+      value: "0.0.3",
     },
     {
       rule: "inject_global_value",
       identifier: "TicketsVersion",
-      value: "0.0.4",
+      value: "0.0.5",
     },
     {
       rule: "compute_expression"
