@@ -24,28 +24,18 @@ type InterfaceWorksRenderingTicket = {
 	Composition: _InterfaceWorksComposition,
 	Arguments: { any }?,
 	ID: (number | string)?,
-	IsRoot: boolean?,
-	Reuse: Instance?,
+	Reuse: Frame?,
 }
 
 export type InterfaceWorksRenderingSchedule = { InterfaceWorksRenderingTicket }
 
 type InterfaceWorksRecomposingTicket = {
-	Stroke: InterfaceWorksBase,
+	Stroke: InterfaceWorksStroke,
 	Arguments: { any }?,
 	ID: string?,
 }
 
 export type InterfaceWorksRecomposingSchedule = { InterfaceWorksRecomposingTicket }
-
-type InterfaceWorksRenderingElement = InterfaceWorksElement & {
-	Name: (string | number)?,
-	ParentObject: InterfaceWorksObject,
-	ParentInstance: Instance?,
-	Parent: InterfaceWorksBase,
-	Object: InterfaceWorksObject?,
-	Old: InterfaceWorksElement?,
-}
 
 local ComposerScheduler = {}
 ComposerScheduler.CurrentComposition = nil :: InterfaceWorksStroke?
@@ -94,17 +84,14 @@ end
 --[[
 
     Updates the object according to changes in Elements.
-    Returns already compared children of the object.
 
 ]]
-local function PushObject(Object: InterfaceWorksBase, New: InterfaceWorksRenderingElement, Old: InterfaceWorksElement)
-	local Host = Object.Host
+local function PushObject(Object: InterfaceWorksBase, New: InterfaceWorksElement, Old: InterfaceWorksElement)
+	local Host: Instance = Object.Host :: Instance
 
-	if New.Ps and Old.Ps then
-		for prop, val in New.Ps do
-			if Old.Ps[prop] ~= val then
-				Host[prop] = val
-			end
+	for prop, val in New.Ps do
+		if Old.Ps[prop] ~= val then
+			Host[prop] = val
 		end
 	end
 
@@ -124,34 +111,33 @@ end
 ]]
 local function CreateObject(
 	SourceObject: InterfaceWorksBase,
-	Element: InterfaceWorksRenderingElement,
+	Element: InterfaceWorksElement,
+	ElementName: string | number,
 	ReuseHost: Instance?
 )
-	local Host: any = ReuseHost or Instance.new(Element.ID or "")
-	Host.Name = Element.Name
+	local Host: any = ReuseHost or Instance.new(Element.ID)
+	Host.Name = ElementName
 
-	if Element.Ps and not ReuseHost then
+	if not ReuseHost then
 		for prop: string, val: any in Element.Ps do
 			Host[prop] = val
 		end
 	end
 
 	local NewElementObject: InterfaceWorksObject = InterfaceWorksObject.New(Host)
-	SourceObject:Insert(NewElementObject, Element.Name)
+	SourceObject:Insert(NewElementObject, ElementName)
 
-	if Element.Fs then
-		for fndata: string | number, fn: (any) -> any in Element.Fs do
-			if typeof(fndata) == "number" and InputTypes[fndata] then
-				local Worker = InputTypes[fndata](NewElementObject, fn)
+	for fndata: string | number, fn: (any) -> any in Element.Fs do
+		if InputTypes[fndata] then
+			local Worker: any = InputTypes[fndata](NewElementObject, fn)
 
-				if Worker then
-					table.insert(NewElementObject.Workers, Worker)
-				end
-				continue
+			if Worker then
+				table.insert(NewElementObject.Workers, Worker)
 			end
-			NewElementObject[fndata] = function(): any
-				return fn(NewElementObject)
-			end
+			continue
+		end
+		NewElementObject[fndata] = function(): any
+			return fn(NewElementObject)
 		end
 	end
 
@@ -165,6 +151,16 @@ local function CreateObject(
 	return NewElementObject
 end
 
+local function CreateProperty(SourceObject: InterfaceWorksBase, Element: InterfaceWorksElement)
+	local HeadlessHost = Instance.new(Element.ID)
+	if Element.Ps then
+		for prop: string, val: any in Element.Ps do
+			HeadlessHost[prop] = val
+		end
+	end
+	HeadlessHost.Parent = SourceObject.Host
+end
+
 --Exported functions
 
 --[[
@@ -176,11 +172,10 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 	return Jobs.CreateJob(function(Environment)
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
-				["Parent"] = nil,
-				["Composition"] = StartingComposition,
-				["Arguments"] = StartingArguments,
-				["ID"] = nil,
-				["IsRoot"] = true,
+				Parent = nil,
+				Composition = StartingComposition,
+				Arguments = StartingArguments,
+				ID = nil,
 			},
 		}
 		for _, Render in RenderQueue do
@@ -193,56 +188,53 @@ function ComposerScheduler.Compose_Create(StartingComposition: _InterfaceWorksCo
 				Environment.Stroke = NewStroke
 			end
 
-			local Children: { InterfaceWorksRenderingElement } = {}
-			local ChildrenPointer = 0
+			local Children: { { [string | number]: InterfaceWorksElement? } } = {
+				NewBuild,
+			}
+			local Hierarchy: { InterfaceWorksBase } = {
+				NewStroke,
+			}
+			local Pointer = 0
 
-			for name, element in NewBuild do
-				element["Name"] = element.Key or name
-				element["Parent"] = NewStroke
-				table.insert(Children, element :: any)
-			end
+			while Pointer ~= #Children do
+				Pointer += 1
 
-			while ChildrenPointer ~= #Children do
-				ChildrenPointer += 1
+				local CurrentBatch = Children[Pointer]
+				local Parent = Hierarchy[Pointer]
 
-				local ElementContainer = Children[ChildrenPointer]
-				local Element = ElementContainer
-				local ElementName = ElementContainer.Name
-				local SourceObject: InterfaceWorksBase? = ElementContainer.Parent
-
-				if not SourceObject then
-					continue
-				end
-
-				if Element.Type == "Object" then
-					local NewObject = CreateObject(SourceObject, Element)
-
-					for name: string | number, ChildElement: InterfaceWorksElement? in Element.Cn do
-						if not ChildElement then
-							continue
-						end
-						ChildElement["Parent"] = NewObject
-						ChildElement["Name"] = ChildElement.Key or name
-						table.insert(Children, ChildElement :: InterfaceWorksRenderingElement)
-					end
-				elseif Element.Type == "Property" then
-					local HeadlessHost = Instance.new(Element.ID)
-					if Element.Ps then
-						for prop: string, val: any in Element.Ps do
-							HeadlessHost[prop] = val
-						end
-					end
-					HeadlessHost.Parent = SourceObject.Host
-				else
-					if not Element.Composition then
+				for i, Element in CurrentBatch do
+					if not Element then
 						continue
 					end
-					table.insert(RenderQueue, {
-						["Parent"] = SourceObject,
-						["Composition"] = Element.Composition,
-						["Arguments"] = Element.FragmentArguments,
-						["ID"] = ElementName,
-					})
+					local ElementName = Element.Key or i
+
+					if Element.Type == "Object" then
+						local NewObject = CreateObject(Parent, Element, ElementName)
+
+						NewObject.IsOrigin = true
+
+						local NewIndex = #Children + 1
+						Hierarchy[NewIndex] = NewObject
+
+						Children[NewIndex] = Element.Cn
+
+						continue
+					end
+
+					if Element.Type == "Property" then
+						CreateProperty(Parent, Element)
+						continue
+					end
+
+					if Element.Type == "Fragment" and Element.Composition then
+						table.insert(RenderQueue, {
+							Parent = Parent,
+							Composition = Element.Composition,
+							Arguments = Element.FragmentArguments,
+							ID = ElementName,
+						})
+						continue
+					end
 				end
 			end
 			--Set stroke state to init=true
@@ -259,22 +251,21 @@ end
 ]]
 function ComposerScheduler.Compose_Reuse(
 	StartingComposition: _InterfaceWorksComposition,
-	Reuse: Instance,
+	Reuse: Frame,
 	StartingArguments: { any }?
 )
 	return Jobs.CreateJob(function(Environment)
 		local RenderQueue: InterfaceWorksRenderingSchedule = {
 			{
-				["Parent"] = nil,
-				["Composition"] = StartingComposition,
-				["Arguments"] = StartingArguments,
-				["ID"] = nil,
-				["IsRoot"] = true,
-				["Reuse"] = Reuse,
+				Parent = nil,
+				Composition = StartingComposition,
+				Arguments = StartingArguments,
+				ID = nil,
+				Reuse = Reuse,
 			},
 		}
 		for _, Render in RenderQueue do
-			local NewStroke = CreateStroke(Render)
+			local NewStroke = CreateStroke(Render, Render.Reuse)
 			local NewBuild = PushStroke(NewStroke, Render.Arguments)
 
 			if Render.Parent then
@@ -283,54 +274,57 @@ function ComposerScheduler.Compose_Reuse(
 				Environment.Stroke = NewStroke
 			end
 
-			local Children: { InterfaceWorksRenderingElement } = {}
-			local ChildrenPointer = 0
+			local Children: { { [string | number]: InterfaceWorksElement? } } = {
+				NewBuild,
+			}
+			local Hierarchy: { InterfaceWorksBase } = {
+				NewStroke,
+			}
+			local Pointer = 0
 
-			for name, element in NewBuild do
-				element["Name"] = element.Key or name
-				element["Parent"] = NewStroke
-				element["ParentInstance"] = Render.Reuse
-				table.insert(Children, element :: InterfaceWorksRenderingElement)
-			end
+			while Pointer ~= #Children do
+				Pointer += 1
 
-			while ChildrenPointer ~= #Children do
-				ChildrenPointer += 1
+				local CurrentBatch = Children[Pointer]
+				local Parent = Hierarchy[Pointer]
 
-				local ElementContainer = Children[ChildrenPointer]
-				local Element = ElementContainer
-				local ElementName = ElementContainer.Name
-				local SourceObject = ElementContainer.Parent
-
-				local DirtyHost: Instance? = Element.ParentInstance[ElementName]
-
-				if not DirtyHost then
-					continue
-				end
-
-				if Element.Type == "Object" then
-					local NewElementObject = CreateObject(SourceObject, Element, DirtyHost)
-
-					for name: string | number, element in Element.Cn do
-						if not element then
-							continue
-						end
-						element["Name"] = element.Key or name
-						element["Parent"] = NewElementObject
-						element["ParentObject"] = SourceObject
-						element["ParentInstance"] = DirtyHost
-						table.insert(Children, element :: InterfaceWorksRenderingElement)
-					end
-				else
-					if not Element.Composition then
+				for i, Element in CurrentBatch do
+					if not Element then
 						continue
 					end
-					table.insert(RenderQueue, {
-						["Parent"] = SourceObject,
-						["Composition"] = Element.Composition,
-						["Arguments"] = Element.FragmentArguments,
-						["ID"] = ElementName,
-						["Reuse"] = DirtyHost,
-					})
+					local ElementName = Element.Key or i
+
+					local ParentHost: Instance = Parent.Host :: Instance
+					local DirtyHost: Frame? = ParentHost[ElementName] :: Frame?
+
+					if not DirtyHost then
+						warn(
+							"Corrupted Host! This means the composition changes during the initial recomposition. Use seperate CIDs."
+						)
+						return
+					end
+
+					if Element.Type == "Object" then
+						local NewObject = CreateObject(Parent, Element, ElementName, DirtyHost)
+
+						local NewIndex = #Children + 1
+						Hierarchy[NewIndex] = NewObject
+
+						Children[NewIndex] = Element.Cn
+
+						continue
+					end
+
+					if Element.Type == "Fragment" and Element.Composition then
+						table.insert(RenderQueue, {
+							Parent = Parent,
+							Composition = Element.Composition,
+							Arguments = Element.FragmentArguments,
+							ID = ElementName,
+							Reuse = DirtyHost,
+						})
+						continue
+					end
 				end
 			end
 			--Set stroke state to init=true
@@ -354,131 +348,134 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 				Arguments = Init.SelfArguments,
 			} }
 		for _, Ticket: InterfaceWorksRecomposingTicket in Strokes do
-			local Stroke = Ticket.Stroke
-			local Arguments = Ticket.Arguments
+			local Stroke: InterfaceWorksStroke = Ticket.Stroke
+			local Arguments: { any }? = Ticket.Arguments
 
-			local OldBuild = Stroke.CurrentComposition or {}
-			local NewBuild = PushStroke(Stroke, Arguments)
+			local OldBuild: { InterfaceWorksElement }? = Stroke.CurrentComposition
+			local NewBuild: { InterfaceWorksElement } = PushStroke(Stroke, Arguments)
 
-			local Children: { InterfaceWorksRenderingElement } = {}
-
-			local function CompareChildren(
-				Old: { [any]: InterfaceWorksElement? },
-				New: { [any]: InterfaceWorksElement? },
-				ParentObject: InterfaceWorksBase
-			)
-				local KeyedOld: { [string | number]: InterfaceWorksElement } = {}
-				local KeyedNew: { [string | number]: InterfaceWorksElement } = {}
-
-				for i, v in Old do
-					if not v then
-						continue
-					end
-					if v.Key then
-						KeyedOld[v.Key] = v
-						continue
-					end
-					KeyedOld[i] = v
-				end
-
-				for i, v in New do
-					if not v then
-						continue
-					end
-					if v.Key then
-						KeyedNew[v.Key] = v
-						continue
-					end
-					KeyedNew[i] = v
-				end
-
-				for i: string | number, InterfaceWorksElement in KeyedNew do
-					if KeyedOld[i] == nil then
-						InterfaceWorksElement["Name"] = i
-						InterfaceWorksElement["ParentObject"] = ParentObject
-						table.insert(Children, InterfaceWorksElement :: InterfaceWorksRenderingElement)
-					elseif InterfaceWorksElement.Type ~= "Property" then
-						InterfaceWorksElement["Object"] = ParentObject[i]
-						InterfaceWorksElement["Old"] = KeyedOld[i]
-						table.insert(Children, InterfaceWorksElement :: InterfaceWorksRenderingElement)
-					end
-				end
-				for i: string | number, InterfaceWorksElement in KeyedOld do
-					if KeyedNew[i] == nil then
-						local OldInstance: any = ParentObject[i]
-						OldInstance:Destroy()
-					end
-				end
-			end
-
-			CompareChildren(OldBuild, NewBuild, Stroke)
+			local NewChildren: { { [number | string]: InterfaceWorksElement? } } = {
+				NewBuild,
+			}
+			local OldChildren: { { [number | string]: InterfaceWorksElement? }? } = {
+				OldBuild,
+			}
+			local Hierarchy: { InterfaceWorksBase } = {
+				Stroke,
+			}
 
 			local Pointer = 0
 
-			while #Children ~= Pointer do
+			while Pointer ~= #NewChildren do
 				Pointer += 1
 
-				local CurrentElement = Children[Pointer]
-				local OldElement = CurrentElement.Old
-				CurrentElement.Old = nil :: any -- keep this to prevent old compositions not being garbage collected
+				local New: { [number | string]: InterfaceWorksElement? } = NewChildren[Pointer]
+				local Old: { [number | string]: InterfaceWorksElement? }? = OldChildren[Pointer]
+				local Parent: InterfaceWorksBase = Hierarchy[Pointer]
 
-				local ElementObject: InterfaceWorksBase = CurrentElement.Object
+				local Renew = {}
 
-				if not ElementObject then
-					if CurrentElement.Type == "Object" then
-						ElementObject = CreateObject(CurrentElement.ParentObject, CurrentElement)
-					elseif CurrentElement.Type == "Fragment" then
-						local RenderingTicket: InterfaceWorksRenderingTicket = {
-							Composition = CurrentElement.Composition,
-							Arguments = CurrentElement.FragmentArguments,
-							Parent = CurrentElement.ParentObject,
-							ID = CurrentElement.Name,
-						}
-						ElementObject = CreateStroke(RenderingTicket)
-					elseif CurrentElement.Type == "Property" then
-						local HeadlessHost = Instance.new(CurrentElement.ID)
-						if CurrentElement.Ps then
-							for prop: string, val: any in CurrentElement.Ps do
-								HeadlessHost[prop] = val
+				for NewIndex: number | string, NewElement: InterfaceWorksElement? in New do
+					if not NewElement then
+						continue
+					end
+
+					local Found: boolean = false
+					local NewName: number | string = NewElement.Key or NewIndex
+
+					if Old then
+						for OldIndex: number | string, OldElement: InterfaceWorksElement? in Old do
+							if not OldElement then
+								continue
 							end
+
+							if NewElement.Key then
+								if NewElement.Key ~= OldElement.Key then
+									continue
+								end
+							else
+								if NewIndex ~= OldIndex then
+									continue
+								end
+							end
+
+							Found = true
+							Renew[OldElement.Key or OldIndex] = true
+
+							if NewElement.Type == "Object" then
+								PushObject(Parent[NewName], NewElement, OldElement)
+								local NewChildrenIndex = #NewChildren + 1
+								NewChildren[NewChildrenIndex] = NewElement.Cn
+								OldChildren[NewChildrenIndex] = OldElement.Cn
+								Hierarchy[NewChildrenIndex] = Parent[NewName]
+							end
+
+							if NewElement.Type == "Fragment" then
+								local RecomposingTicket: InterfaceWorksRecomposingTicket = {
+									Stroke = Parent[NewName],
+									Arguments = NewElement.FragmentArguments,
+								}
+
+								if OldElement and NewElement.FragmentArguments and OldElement.FragmentArguments then
+									for dt, val in NewElement.FragmentArguments do
+										if OldElement.FragmentArguments[dt] ~= val then
+											table.insert(Strokes, RecomposingTicket)
+											break
+										elseif typeof(val) == "table" then
+											table.insert(Strokes, RecomposingTicket)
+											break
+										end
+									end
+								else
+									table.insert(Strokes, RecomposingTicket)
+								end
+							end
+
+							break
 						end
-						HeadlessHost.Parent = CurrentElement.ParentObject.Host
+					end
+
+					if Found then
 						continue
-					else
-						continue
+					end
+
+					if NewElement.Type == "Object" then
+						local NewParent = CreateObject(Parent, NewElement, NewName)
+						local NewChildrenIndex = #NewChildren + 1
+						NewChildren[NewChildrenIndex] = NewElement.Cn
+						OldChildren[NewChildrenIndex] = nil
+						Hierarchy[NewChildrenIndex] = NewParent
+					elseif NewElement.Type == "Property" then
+						CreateProperty(Parent, NewElement)
+					elseif NewElement.Type == "Fragment" and NewElement.Composition then
+						local RenderingTicket: InterfaceWorksRenderingTicket = {
+							Composition = NewElement.Composition,
+							Arguments = NewElement.FragmentArguments,
+							Parent = Parent,
+							ID = NewName,
+						}
+						local NewStroke = CreateStroke(RenderingTicket)
+						table.insert(Strokes, {
+							Stroke = NewStroke,
+							Arguments = NewElement.FragmentArguments,
+						})
 					end
 				end
 
-				if CurrentElement.Type == "Object" then
-					PushObject(ElementObject, CurrentElement, OldElement or {})
-
-					CompareChildren(OldElement and OldElement.Cn or {}, CurrentElement.Cn or {}, ElementObject)
-					continue
-				end
-
-				if CurrentElement.Type == "Fragment" then
-					local RecomposingTicket: InterfaceWorksRecomposingTicket = {
-						Stroke = ElementObject,
-						Arguments = CurrentElement.FragmentArguments,
-					}
-
-					if OldElement then
-						for dt, val in pairs(CurrentElement.FragmentArguments or {}) do
-							if OldElement.FragmentArguments[dt] ~= val then
-								table.insert(Strokes, RecomposingTicket)
-								break
-							elseif typeof(val) == "table" then
-								table.insert(Strokes, RecomposingTicket)
-								break
-							end
+				if Old then
+					for OldIndex, OldElement in Old do
+						if not OldElement then
+							continue
 						end
-					else
-						table.insert(Strokes, RecomposingTicket)
+						local OldName = OldElement.Key or OldIndex
+						if not Renew[OldName] then
+							Parent[OldName]:Destroy()
+						end
 					end
 				end
 			end
 
-			--Wrap things up for this stroke
+			--Wrap things up for this stroke.
 			Stroke.CurrentComposition = NewBuild
 			ComposerScheduler.CurrentComposition = nil
 		end

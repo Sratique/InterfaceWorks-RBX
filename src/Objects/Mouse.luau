@@ -24,8 +24,9 @@ export type InterfaceWorksMouse =
 			Host: DockWidgetPluginGui,
 			Root: Frame,
 		},
-		{} :: typeof(MouseShared) & {
+		{} :: {
 
+			Destroy: (self: InterfaceWorksMouse) -> (),
 			GetLocation: (self: InterfaceWorksMouse) -> Vector2,
 			Focused: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
 			FocusLost: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
@@ -47,14 +48,13 @@ function MouseShared.New(Root: Frame): InterfaceWorksMouse
 	return NewMouse
 end
 
-function MouseShared:Destroy()
-	self.Root = nil
+function MouseShared.Destroy(self: InterfaceWorksMouse)
 	self:__Destroy()
 end
 
 --Plugin instruction set--
 
-function MousePlugin:GetLocation(): Vector2
+function MousePlugin.GetLocation(self: InterfaceWorksMouse): Vector2
 	local Dock = self.Host
 
 	return Dock:GetRelativeMousePosition()
@@ -70,7 +70,7 @@ function MousePlugin.Focused(self: InterfaceWorksMouse, callback: () -> ()): RBX
 	return Dock.WindowFocused:Connect(callback)
 end
 
-function MousePlugin:FocusLost(callback: () -> ()): RBXScriptConnection
+function MousePlugin.FocusLost(self: InterfaceWorksMouse, callback: () -> ()): RBXScriptConnection
 	local Dock: DockWidgetPluginGui = self.Host
 
 	return Dock.WindowFocusReleased:Connect(callback)
@@ -78,7 +78,7 @@ end
 
 --ScreenGui instruction set--
 
-function MouseScreenGui:GetLocation(): Vector2
+function MouseScreenGui.GetLocation(self: InterfaceWorksMouse): Vector2
 	return UserInputService:GetMouseLocation()
 end
 

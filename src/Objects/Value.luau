@@ -57,23 +57,23 @@ function ValueModule.New(DefaultValue: number): InterfaceWorksValue
 	return NewValue
 end
 
-function ValueObject:OnChange(func: () -> ())
+function ValueObject.OnChange(self: InterfaceWorksValue, func: () -> ())
 	table.insert(self.ChangeFunctions, func)
 end
 
-function ValueObject:Set(NewValue: any)
+function ValueObject.Set(self: InterfaceWorksValue, NewValue: any)
 	if NewValue == self.__Value then
 		return
 	end
 
-	rawset(self, "__Value", NewValue)
+	rawset(self :: any, "__Value", NewValue)
 
 	for _, v: () -> () in pairs(self.ChangeFunctions) do
 		v()
 	end
 end
 
-function ValueObject:Destroy()
+function ValueObject.Destroy(self: InterfaceWorksValue)
 	self:__Destroy()
 end
 

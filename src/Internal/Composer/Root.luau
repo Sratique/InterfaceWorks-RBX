@@ -22,7 +22,7 @@ function ComposerRoot.Compose(
 	StrokeArguments: { any }?
 )
 	local Ticket: InterfaceWorksTicket, Existing = Tickets.New("Compose", ID, function(self)
-		local ComposeJob = Scheduler.Compose_Create(Composition, StrokeArguments)
+		local ComposeJob: InterfaceWorksJob = Scheduler.Compose_Create(Composition, StrokeArguments)
 
 		ComposeJob:Finished(function()
 			local NewStroke = ComposeJob.Environment.Stroke
@@ -48,9 +48,10 @@ function ComposerRoot.Compose(
 					warn("Corrupted ticket. - InterfaceWorks:Root")
 					return
 				end
-				local Dirty: Instance = Stroke.Host:Clone()
+				local Dirty: Frame = Stroke.Host:Clone()
 				Tickets.New("Compose", nil, function()
-					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty, StrokeArguments)
+					local DirtyComposeJob: InterfaceWorksJob =
+						Scheduler.Compose_Reuse(Composition, Dirty, StrokeArguments)
 
 					DirtyComposeJob:Finished(function()
 						Tickets.Invalidate()
@@ -87,7 +88,7 @@ function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke)
 		return
 	end
 
-	local DiffJob = Scheduler.ReCompose(Stroke)
+	local DiffJob: InterfaceWorksJob = Scheduler.ReCompose(Stroke)
 
 	Tickets.New("Recompose", TicketID, function(self: InterfaceWorksTicket)
 		Stroke:MaxPointer(function()

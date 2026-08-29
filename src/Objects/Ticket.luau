@@ -32,7 +32,7 @@ function TicketObject.New(ID: string?, Job: (self: InterfaceWorksTicket) -> ()):
 	return NewTicketObject
 end
 
-function TicketObject:Destroy()
+function TicketObject.Destroy(self: InterfaceWorksTicket)
 	self:__Destroy()
 end
 

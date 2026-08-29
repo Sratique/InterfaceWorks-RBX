@@ -55,7 +55,7 @@ function MaterialObject.New(
 	return NewMaterialObject
 end
 
-function MaterialObject:AddTarget(Object: InterfaceWorksObject)
+function MaterialObject.AddTarget(self: InterfaceWorksMaterial, Object: InterfaceWorksObject)
 	if not Object.Host or not Object.Host:IsA("GuiObject") then
 		return
 	end
@@ -77,7 +77,7 @@ function MaterialObject:AddTarget(Object: InterfaceWorksObject)
 	end)
 end
 
-function MaterialObject:Destroy()
+function MaterialObject.Destroy(self: InterfaceWorksMaterial)
 	if self.ConstantReactivityWorker then
 		self.ConstantReactivityWorker:Disconnect()
 	end

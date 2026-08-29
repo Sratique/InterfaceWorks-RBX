@@ -6,11 +6,11 @@ export type InterfaceWorksElementType = "Object" | "Property" | "Fragment"
 
 export type InterfaceWorksElement = {
 
-	ID: string?,
+	ID: string,
 	Key: string?,
 	Type: InterfaceWorksElementType,
-	Ps: { [string]: any }?,
-	Fs: { [InterfaceWorksInputType | string]: (any) -> any }?,
+	Ps: { [string]: any },
+	Fs: { [InterfaceWorksInputType | string]: (any) -> any },
 	Cn: { [string | number]: InterfaceWorksElement? },
 	Mt: any?,
 	An: InterfaceWorksAnimationData?,

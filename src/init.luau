@@ -103,8 +103,8 @@ function InterfaceWorks.CreateElement(
 
 		ID = Classname,
 		Key = Data and Data.Key,
-		Ps = Data and Data.Properties,
-		Fs = Data and Data.Functions,
+		Ps = Data and Data.Properties or {},
+		Fs = Data and Data.Functions or {},
 		Mt = Data and Data.Material,
 		An = Data and Data.Animation,
 		Cn = Children or {},
@@ -150,11 +150,13 @@ function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, 
 	local ElementType: InterfaceWorksElementType = "Fragment"
 
 	local Struct = {
-		ID = nil,
+		ID = "",
 		Type = ElementType,
 		Composition = Composition,
 		FragmentArguments = { ... },
 		Cn = {},
+		Ps = {},
+		Fs = {},
 	}
 
 	return Struct

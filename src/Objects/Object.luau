@@ -39,11 +39,11 @@ function Object.New(SourceInstance: Instance): InterfaceWorksObject
 	return NewObject
 end
 
-function Object:GetTreeStroke(): InterfaceWorksStroke
+function Object.GetTreeStroke(self: InterfaceWorksObject): InterfaceWorksStroke
 	return self[RootProperties].TreeRoot
 end
 
-function Object:Destroy()
+function Object.Destroy(self: InterfaceWorksObject)
 	for _, v: InterfaceWorksWorker in pairs(self.Workers) do
 		v:Disconnect()
 	end

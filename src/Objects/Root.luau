@@ -25,7 +25,12 @@ function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
 	return NewTreeRoot
 end
 
-function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: InterfaceWorksRootArguments, ...: any?)
+function TreeRoot.Attach(
+	self: InterfaceWorksRoot,
+	Composition: _InterfaceWorksComposition,
+	Arguments: InterfaceWorksRootArguments,
+	...: any?
+)
 	Arguments = Arguments or {}
 
 	local SID = Arguments.StrokeID
@@ -37,12 +42,12 @@ function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: Int
 	end, CID, { ... })
 end
 
-function TreeRoot:Destroy()
+function TreeRoot.Destroy(self: InterfaceWorksRoot)
 	self.Host = nil
 	self:__Destroy()
 end
 
-function TreeRoot:DestroyStroke(ID: string | "Main")
+function TreeRoot.DestroyStroke(self: InterfaceWorksRoot, ID: string | "Main")
 	local Object = self[ID or "Main"]
 	if Object then
 		Object:Destroy()

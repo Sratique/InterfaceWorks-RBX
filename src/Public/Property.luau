@@ -6,6 +6,7 @@ local function AssembleProperty(ID: string, Ps: { [any]: any }): InterfaceWorksE
 
 		ID = ID,
 		Ps = Ps,
+		Fs = {},
 		Cn = {},
 		Type = "Property",
 	}
