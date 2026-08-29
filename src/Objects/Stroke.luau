@@ -1,29 +1,58 @@
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
-type InterfaceWorksValue = types.InterfaceWorksValue
-type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksWorker = types.InterfaceWorksWorker
+local structs = require("@Root/structs")
+type _InterfaceWorksComposition = structs._InterfaceWorksComposition
+type InterfaceWorksElement = structs.InterfaceWorksElement
 
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
+local InterfaceWorksValue = require("@Objects/Value")
+type InterfaceWorksValue = InterfaceWorksValue.InterfaceWorksValue
+local InterfaceWorksMouse = require("@Objects/Mouse")
+type InterfaceWorksMouse = InterfaceWorksMouse.InterfaceWorksMouse
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local RootProperties = ProtectedObject.GetProxy("RootProperties")
-local Mouse = require("./Mouse")
 
 local Stroke = {}
 Stroke.__index = setmetatable(Stroke, BaseObject)
 
-function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse: Instance?): InterfaceWorksStroke
-	local VirtualHost = Reuse or Instance.new("Frame")
+export type InterfaceWorksStroke =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
+
+			CurrentValuePosition: number,
+			CurrentEventPosition: number,
+			Events: { InterfaceWorksWorker },
+			Values: { any },
+			TotalValues: number,
+			ID: any,
+			RetracingComposition: _InterfaceWorksComposition,
+			SelfArguments: { any }?,
+			CurrentComposition: { InterfaceWorksElement }?,
+			Host: Frame,
+			LastParent: Instance?,
+			Mouse: any,
+		},
+		Stroke
+	))
+
+function Stroke.New(
+	Composition: _InterfaceWorksComposition,
+	ID: (string | number)?,
+	Reuse: Frame?
+): InterfaceWorksStroke
+	local VirtualHost: Frame = Reuse or Instance.new("Frame")
 	if not Reuse then
 		VirtualHost.Size = UDim2.fromScale(1, 1)
 		VirtualHost.BackgroundTransparency = 1
-		VirtualHost.Name = ID or "Stroke"
+		VirtualHost.Name = tostring(ID or "Stroke")
 	end
 
-	local NewBaseObject = BaseObject.New(VirtualHost)
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New(VirtualHost)
 
-	local NewStroke = setmetatable(NewBaseObject, Stroke)
+	local NewStroke = setmetatable(NewBaseObject :: InterfaceWorksStroke, Stroke)
 
 	NewStroke.Values = {}
 	NewStroke.TotalValues = 0
@@ -43,15 +72,15 @@ function Stroke.New(Composition: _InterfaceWorksComposition, ID: string?, Reuse:
 	return NewStroke
 end
 
-function Stroke:__Init()
+function Stroke.__Init(self: InterfaceWorksStroke)
 	self[RootProperties].Init = true
 end
 
-function Stroke:MaxPointer(callback: () -> ())
+function Stroke.MaxPointer(self: InterfaceWorksStroke, callback: () -> ())
 	table.insert(self[RootProperties].MaxPointerConnections, callback)
 end
 
-function Stroke:AdvanceValuePosition()
+function Stroke.AdvanceValuePosition(self: InterfaceWorksStroke)
 	self.CurrentValuePosition += 1
 	if self[RootProperties].Init and self.CurrentValuePosition == self.TotalValues then
 		for i, v in pairs(self[RootProperties].MaxPointerConnections) do
@@ -61,37 +90,37 @@ function Stroke:AdvanceValuePosition()
 	end
 end
 
-function Stroke:AdvanceEventPosition()
+function Stroke.AdvanceEventPosition(self: InterfaceWorksStroke)
 	self.CurrentEventPosition += 1
 end
 
-function Stroke:GetCurrentValue()
+function Stroke.GetCurrentValue(self: InterfaceWorksStroke)
 	self:AdvanceValuePosition()
 	return self.Values[self.CurrentValuePosition]
 end
 
-function Stroke:GetCurrentEvent()
+function Stroke.GetCurrentEvent(self: InterfaceWorksStroke)
 	self:AdvanceEventPosition()
 	return self.Events[self.CurrentEventPosition]
 end
 
-function Stroke:InsertValue(Value: InterfaceWorksValue)
+function Stroke.InsertValue(self: InterfaceWorksStroke, Value: InterfaceWorksValue)
 	self.TotalValues += 1
 	local ID = #self.Values + 1
 	Value.ID = ID
 	self.Values[ID] = Value
 end
 
-function Stroke:InsertEvent(Event: InterfaceWorksWorker)
+function Stroke.InsertEvent(self: InterfaceWorksStroke, Event: InterfaceWorksWorker)
 	table.insert(self.Events, Event)
 end
 
-function Stroke:ResetPosition()
+function Stroke.ResetPosition(self: InterfaceWorksStroke)
 	self.CurrentValuePosition = 0
 	self.CurrentEventPosition = 0
 end
 
-function Stroke:UnMount()
+function Stroke.UnMount(self: InterfaceWorksStroke)
 	if self.LastParent then
 		return
 	end
@@ -102,7 +131,7 @@ function Stroke:UnMount()
 	--Do other stuff for state clean up
 end
 
-function Stroke:ReMount()
+function Stroke.ReMount(self: InterfaceWorksStroke)
 	if not self.LastParent then
 		return
 	end
@@ -110,7 +139,7 @@ function Stroke:ReMount()
 	self.Host.Parent = self.LastParent
 end
 
-function Stroke:Destroy()
+function Stroke.Destroy(self: InterfaceWorksStroke)
 	for _, v: InterfaceWorksWorker in pairs(self.Events) do
 		v:Disconnect()
 	end
@@ -120,8 +149,8 @@ function Stroke:Destroy()
 	self:__Destroy()
 end
 
-function Stroke:GetMouse()
-	self.Mouse = self.Mouse or Mouse.New(self)
+function Stroke.GetMouse(self: InterfaceWorksStroke): InterfaceWorksMouse
+	self.Mouse = self.Mouse or InterfaceWorksMouse.New(self.Host)
 	return self.Mouse
 end
 

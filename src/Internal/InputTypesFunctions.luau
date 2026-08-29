@@ -1,5 +1,7 @@
-local types = require("@Root/types")
-type InterfaceWorksObject = types.InterfaceWorksObject
+--!nocheck
+
+local InterfaceWorksObject = require("@Objects/Object")
+type InterfaceWorksObject = InterfaceWorksObject.InterfaceWorksObject
 
 local RunService = game:GetService("RunService")
 
@@ -9,6 +11,9 @@ local InputTypesEnums = require("@Root/Public/InputTypesEnums")
 return {
 
 	[InputTypesEnums.Click] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any) -- No need for a seperate worker
+		if not self.Host then
+			return
+		end
 		if self.Host:IsA("TextButton") or self.Host:IsA("ImageButton") then
 			self.Host.Activated:Connect(function()
 				Callback(self)
@@ -105,6 +110,9 @@ return {
 		end)
 	end,
 	[InputTypesEnums.Focus] = function(self: InterfaceWorksObject, Callback: (self: InterfaceWorksObject) -> ...any)
+		if not self.Host then
+			return
+		end
 		if self.Host:IsA("TextBox") then
 			self.Host.Focused:Connect(function()
 				Callback(self)
@@ -117,6 +125,9 @@ return {
 		self: InterfaceWorksObject,
 		Callback: (self: InterfaceWorksObject) -> ...any
 	)
+		if not self.Host then
+			return
+		end
 		if self.Host:IsA("TextBox") then
 			self.Host.FocusLost:Connect(function()
 				Callback(self)

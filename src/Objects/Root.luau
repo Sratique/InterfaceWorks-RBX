@@ -1,10 +1,11 @@
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
-type InterfaceWorksRoot = types.InterfaceWorksRoot
+local types = require("@Root/structs")
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksRootArguements = types.InterfaceWorksRootArguments
+type InterfaceWorksRootArguments = types.InterfaceWorksRootArguments
 
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksStroke = require("@Objects/Stroke")
+type InterfaceWorksStroke = InterfaceWorksStroke.InterfaceWorksStroke
 
 local Composer = require("@Root/Internal/Composer")
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
@@ -12,17 +13,24 @@ local ProtectedObject = require("@Root/Internal/ProtectedObject")
 local TreeRoot = {}
 TreeRoot.__index = setmetatable(TreeRoot, BaseObject)
 
-function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
-	local NewBaseObject = BaseObject.New(SourceInstance)
+export type InterfaceWorksRoot = InterfaceWorksBase & typeof(setmetatable({}, TreeRoot))
 
-	local NewTreeRoot = setmetatable(NewBaseObject, TreeRoot)
+function TreeRoot.New(SourceInstance: Instance): InterfaceWorksRoot
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New(SourceInstance)
+
+	local NewTreeRoot: InterfaceWorksRoot = setmetatable(NewBaseObject :: InterfaceWorksRoot, TreeRoot)
 
 	ProtectedObject.LayerInheritance(NewTreeRoot, "InterfaceWorksRoot")
 
 	return NewTreeRoot
 end
 
-function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: InterfaceWorksRootArguements)
+function TreeRoot.Attach(
+	self: InterfaceWorksRoot,
+	Composition: _InterfaceWorksComposition,
+	Arguments: InterfaceWorksRootArguments,
+	...: any?
+)
 	Arguments = Arguments or {}
 
 	local SID = Arguments.StrokeID
@@ -31,15 +39,15 @@ function TreeRoot:Attach(Composition: _InterfaceWorksComposition, Arguments: Int
 		ComposedStroke.Host.Name = SID or "Main"
 
 		self:Insert(ComposedStroke, SID or "Main")
-	end, CID)
+	end, CID, { ... })
 end
 
-function TreeRoot:Destroy()
+function TreeRoot.Destroy(self: InterfaceWorksRoot)
 	self.Host = nil
 	self:__Destroy()
 end
 
-function TreeRoot:DestroyStroke(ID: string | "Main")
+function TreeRoot.DestroyStroke(self: InterfaceWorksRoot, ID: string | "Main")
 	local Object = self[ID or "Main"]
 	if Object then
 		Object:Destroy()

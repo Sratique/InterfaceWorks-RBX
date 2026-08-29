@@ -1,12 +1,9 @@
 local UserInputService = game:GetService("UserInputService")
 
-local types = require("@Root/types")
-type InterfaceWorksMouse = types.InterfaceWorksMouse
-type InterfaceWorksStroke = types.InterfaceWorksStroke
-type InterfaceWorksWorker = types.InterfaceWorksWorker
-
 local BaseObject = require("@BaseObject")
-local Worker = require("@Objects/Worker")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
@@ -20,12 +17,29 @@ MouseScreenGui.__index = setmetatable(MouseScreenGui, MouseShared)
 local MousePlugin = {}
 MousePlugin.__index = setmetatable(MousePlugin, MouseShared)
 
-function MouseShared.New(Root: InterfaceWorksStroke): InterfaceWorksMouse
-	local NewBaseObject = BaseObject.New(Root.Host and Root.Host:FindFirstAncestorWhichIsA("DockWidgetPluginGui"))
+export type InterfaceWorksMouse =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
+			Host: DockWidgetPluginGui,
+			Root: Frame,
+		},
+		{} :: {
+
+			Destroy: (self: InterfaceWorksMouse) -> (),
+			GetLocation: (self: InterfaceWorksMouse) -> Vector2,
+			Focused: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
+			FocusLost: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
+		}
+	))
+
+function MouseShared.New(Root: Frame): InterfaceWorksMouse
+	local NewBaseObject: InterfaceWorksBase =
+		BaseObject.New(Root and Root:FindFirstAncestorWhichIsA("DockWidgetPluginGui"))
 
 	local Host = if NewBaseObject.Host then MousePlugin else MouseScreenGui
 
-	local NewMouse = setmetatable(NewBaseObject, Host)
+	local NewMouse: InterfaceWorksMouse = setmetatable(NewBaseObject :: InterfaceWorksMouse, Host)
 
 	NewMouse.Root = Root
 
@@ -34,26 +48,29 @@ function MouseShared.New(Root: InterfaceWorksStroke): InterfaceWorksMouse
 	return NewMouse
 end
 
-function MouseShared:Destroy()
-	self.Root = nil
+function MouseShared.Destroy(self: InterfaceWorksMouse)
 	self:__Destroy()
 end
 
 --Plugin instruction set--
 
-function MousePlugin:GetLocation(): Vector2
+function MousePlugin.GetLocation(self: InterfaceWorksMouse): Vector2
 	local Dock = self.Host
 
 	return Dock:GetRelativeMousePosition()
 end
 
-function MousePlugin:Focused(callback: () -> ()): RBXScriptConnection
+function MousePlugin.Focused(self: InterfaceWorksMouse, callback: () -> ()): RBXScriptConnection
+	if not self.Host then
+		error("Plugin mouse config failed.")
+	end
+
 	local Dock: DockWidgetPluginGui = self.Host
 
 	return Dock.WindowFocused:Connect(callback)
 end
 
-function MousePlugin:FocusLost(callback: () -> ()): RBXScriptConnection
+function MousePlugin.FocusLost(self: InterfaceWorksMouse, callback: () -> ()): RBXScriptConnection
 	local Dock: DockWidgetPluginGui = self.Host
 
 	return Dock.WindowFocusReleased:Connect(callback)
@@ -61,14 +78,14 @@ end
 
 --ScreenGui instruction set--
 
-function MouseScreenGui:GetLocation(): Vector2
+function MouseScreenGui.GetLocation(self: InterfaceWorksMouse): Vector2
 	return UserInputService:GetMouseLocation()
 end
 
 --This burns my eyes please make this less painful to look at sometime in the future
 
 function MouseScreenGui.FocusLost(self: InterfaceWorksMouse, callback: () -> ()): InterfaceWorksWorker
-	local ContainerFrame: Frame = self.Root.Host
+	local ContainerFrame: Frame = self.Root
 
 	local HitBox = false
 
@@ -103,7 +120,7 @@ function MouseScreenGui.FocusLost(self: InterfaceWorksMouse, callback: () -> ())
 		end
 	end)
 
-	local NewWorker = Worker.New(function()
+	local NewWorker = InterfaceWorksWorker.New(function()
 		MouseEnterEvent:Disconnect()
 		MouseLeaveEvent:Disconnect()
 		UISEvent:Disconnect()
@@ -113,7 +130,7 @@ function MouseScreenGui.FocusLost(self: InterfaceWorksMouse, callback: () -> ())
 end
 
 function MouseScreenGui.Focused(self: InterfaceWorksMouse, callback: () -> ()): InterfaceWorksWorker
-	local ContainerFrame: Frame = self.Root.Host
+	local ContainerFrame: Frame = self.Root
 
 	local HitBox = false
 
@@ -148,7 +165,7 @@ function MouseScreenGui.Focused(self: InterfaceWorksMouse, callback: () -> ()): 
 		end
 	end)
 
-	local NewWorker = Worker.New(function()
+	local NewWorker = InterfaceWorksWorker.New(function()
 		MouseEnterEvent:Disconnect()
 		MouseLeaveEvent:Disconnect()
 		UISEvent:Disconnect()

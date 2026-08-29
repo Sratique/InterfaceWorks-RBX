@@ -1,13 +1,11 @@
-local types = require("@Root/types")
-type InterfaceWorksValue = types.InterfaceWorksValue
-
 local BaseObject = require("@BaseObject")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local ValueModule = {}
 local ValueObject = {}
-ValueObject.__index = function(self, key)
+ValueObject.__index = function(self, key): any
 	if key == "Value" then
 		return rawget(self, "__Value")
 	end
@@ -30,10 +28,24 @@ ValueObject.__newindex = function(self, key, value)
 	rawset(self, key, value)
 end
 
-function ValueModule.New(DefaultValue: number): InterfaceWorksValue
-	local NewBaseObject = BaseObject.New()
+export type InterfaceWorksValue =
+	InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
 
-	local NewValue = setmetatable(NewBaseObject, ValueObject)
+			ChangeFunctions: { () -> () },
+			ID: number,
+			__Value: any,
+			OnChange: (self: InterfaceWorksValue, func: () -> ()) -> ...any,
+			Set: (self: InterfaceWorksValue, NewValue: any) -> ...any,
+		},
+		ValueObject
+	))
+
+function ValueModule.New(DefaultValue: number): InterfaceWorksValue
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New()
+
+	local NewValue: InterfaceWorksValue = setmetatable(NewBaseObject :: InterfaceWorksValue, ValueObject)
 
 	ProtectedObject.LayerInheritance(NewValue, "InterfaceWorksValue")
 
@@ -45,23 +57,23 @@ function ValueModule.New(DefaultValue: number): InterfaceWorksValue
 	return NewValue
 end
 
-function ValueObject:OnChange(func: () -> ())
+function ValueObject.OnChange(self: InterfaceWorksValue, func: () -> ())
 	table.insert(self.ChangeFunctions, func)
 end
 
-function ValueObject:Set(NewValue: any)
+function ValueObject.Set(self: InterfaceWorksValue, NewValue: any)
 	if NewValue == self.__Value then
 		return
 	end
 
-	rawset(self, "__Value", NewValue)
+	rawset(self :: any, "__Value", NewValue)
 
 	for _, v: () -> () in pairs(self.ChangeFunctions) do
 		v()
 	end
 end
 
-function ValueObject:Destroy()
+function ValueObject.Destroy(self: InterfaceWorksValue)
 	self:__Destroy()
 end
 

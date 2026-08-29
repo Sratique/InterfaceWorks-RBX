@@ -1,15 +1,27 @@
-local types = require("@Root/types")
-type InterfaceWorksJob = types.InterfaceWorksJob
-
 local BaseObject = require("@BaseObject")
 
 local JobObject = {}
 JobObject.__index = setmetatable(JobObject, BaseObject)
 
+export type InterfaceWorksJob =
+	BaseObject.InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
+
+			Environment: { [any]: any },
+			Current: thread?,
+			Function: ((Environment: { [any]: any }, ...any) -> ())?,
+			FinishedConnections: { () -> () },
+			Arguments: { [any]: any },
+			Init: boolean,
+		},
+		JobObject
+	))
+
 function JobObject.New(Function: (Environment: { [any]: any }, ...any) -> ()): InterfaceWorksJob
 	local NewBaseObject = BaseObject.New()
 
-	local NewJobObject = setmetatable(NewBaseObject, JobObject)
+	local NewJobObject = setmetatable(NewBaseObject :: InterfaceWorksJob, JobObject)
 
 	NewJobObject.Function = Function
 	NewJobObject.FinishedConnections = {}
@@ -21,19 +33,24 @@ function JobObject.New(Function: (Environment: { [any]: any }, ...any) -> ()): I
 	return NewJobObject
 end
 
-function JobObject:SetArgs(...: any)
+function JobObject.SetArgs(self: InterfaceWorksJob, ...: any)
 	self.Arguments = { ... }
 end
 
-function JobObject:SetEnv(Env: { [any]: any })
+function JobObject.SetEnv(self: InterfaceWorksJob, Env: { [any]: any })
 	self.Environment = Env
 end
 
-function JobObject:GetArtifact()
+function JobObject.GetArtifact(self: InterfaceWorksJob)
 	return self.Environment
 end
 
-function JobObject:Run(...: any)
+function JobObject.Run(self: InterfaceWorksJob, ...: any)
+	if not self.Function then
+		warn("Missing job function.")
+		return
+	end
+
 	if select("#", ...) > 0 then
 		self:SetArgs(...)
 	end
@@ -45,7 +62,7 @@ function JobObject:Run(...: any)
 
 	self.Init = true
 
-	self.Current = task.spawn(coroutine.create(function()
+	self.Current = task.defer(coroutine.create(function()
 		self.Function(self.Environment, unpack(self.Arguments))
 		for _, v in pairs(self.FinishedConnections) do
 			v()
@@ -53,11 +70,11 @@ function JobObject:Run(...: any)
 	end))
 end
 
-function JobObject:Finished(callback: () -> ())
+function JobObject.Finished(self: InterfaceWorksJob, callback: () -> ())
 	table.insert(self.FinishedConnections, callback)
 end
 
-function JobObject:Destroy()
+function JobObject.Destroy(self: InterfaceWorksJob)
 	self.Function = nil
 	table.clear(self.FinishedConnections)
 	table.clear(self.Environment)

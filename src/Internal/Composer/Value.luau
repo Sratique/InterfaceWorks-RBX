@@ -1,12 +1,18 @@
-local types = require("@Root/types")
-type InterfaceWorksValue = types.InterfaceWorksValue
+--!nonstrict
 
 local ComposerValues = {}
+
+local InterfaceWorksValue = require("@Objects/Value")
+type InterfaceWorksValue = InterfaceWorksValue.InterfaceWorksValue
 
 local ComposerRoot = require("./Root")
 local ComposerScheduler = require("./Scheduler")
 
 function ComposerValues.NextValue(): InterfaceWorksValue?
+	if not ComposerScheduler.CurrentComposition then
+		return
+	end
+
 	return ComposerScheduler.CurrentComposition:GetCurrentValue()
 end
 
@@ -16,7 +22,7 @@ function ComposerValues.IndexValue(ValueObject: InterfaceWorksValue)
 	local CurrentComposition = ComposerScheduler.CurrentComposition
 
 	ValueObject:OnChange(function()
-		ComposerRoot.ReCompose(CurrentComposition, ValueObject.ID)
+		ComposerRoot.ReCompose(CurrentComposition)
 	end)
 
 	CurrentComposition:InsertValue(ValueObject)

@@ -1,11 +1,14 @@
-local types = require("@Root/types")
-type InterfaceWorksStroke = types.InterfaceWorksStroke
+local types = require("@Root/structs")
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksValueID = types.InterfaceWorksValueID
-type InterfaceWorksWorker = types.InterfaceWorksWorker
-type InterfaceWorksObject = types.InterfaceWorksObject
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
-type InterfaceWorksJob = types.InterfaceWorksJob
+
+local InterfaceWorksJob = require("@Objects/Job")
+type InterfaceWorksJob = InterfaceWorksJob.InterfaceWorksJob
+local InterfaceWorksStroke = require("@Objects/Stroke")
+type InterfaceWorksStroke = InterfaceWorksStroke.InterfaceWorksStroke
+local InterfaceWorksTicket = require("@Objects/Ticket")
+type InterfaceWorksTicket = InterfaceWorksTicket.InterfaceWorksTicket
 
 local ComposerRoot = {}
 
@@ -15,10 +18,11 @@ local Scheduler = require("./Scheduler")
 function ComposerRoot.Compose(
 	Composition: _InterfaceWorksComposition,
 	callback: (InterfaceWorksStroke) -> ()?,
-	ID: string?
+	ID: string?,
+	StrokeArguments: { any }?
 )
-	local Ticket, Existing = Tickets.New("Compose", ID, function(self)
-		local ComposeJob = Scheduler.Compose_Create(Composition)
+	local Ticket: InterfaceWorksTicket, Existing = Tickets.New("Compose", ID, function(self)
+		local ComposeJob: InterfaceWorksJob = Scheduler.Compose_Create(Composition, StrokeArguments)
 
 		ComposeJob:Finished(function()
 			local NewStroke = ComposeJob.Environment.Stroke
@@ -44,9 +48,10 @@ function ComposerRoot.Compose(
 					warn("Corrupted ticket. - InterfaceWorks:Root")
 					return
 				end
-				local Dirty: Instance = Stroke.Host:Clone()
+				local Dirty: Frame = Stroke.Host:Clone()
 				Tickets.New("Compose", nil, function()
-					local DirtyComposeJob = Scheduler.Compose_Reuse(Composition, Dirty)
+					local DirtyComposeJob: InterfaceWorksJob =
+						Scheduler.Compose_Reuse(Composition, Dirty, StrokeArguments)
 
 					DirtyComposeJob:Finished(function()
 						Tickets.Invalidate()
@@ -66,9 +71,9 @@ function ComposerRoot.Compose(
 	end
 end
 
-function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: InterfaceWorksValueID, Arguments: { any }?)
+function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke)
 	local StrokeID = tostring(Stroke.ID)
-	local TicketID = StrokeID .. Initiator
+	local TicketID = StrokeID
 
 	local _, Exists = Tickets.ExistsQueue(TicketID)
 
@@ -76,21 +81,25 @@ function ComposerRoot.ReCompose(Stroke: InterfaceWorksStroke, Initiator: Interfa
 		return
 	end
 
-	local ParallelTicket, ExistsParallel = Tickets.ExistsParallel(TicketID)
+	local ParallelTicket: InterfaceWorksTicket?, ExistsParallel = Tickets.ExistsParallel(TicketID)
 
-	if ExistsParallel then
+	if ExistsParallel and ParallelTicket then
 		Tickets.Reintroduce(ParallelTicket)
+		return
 	end
 
-	local DiffJob = Scheduler.ReCompose(Stroke)
+	local DiffJob: InterfaceWorksJob = Scheduler.ReCompose(Stroke)
 
-	Tickets.New("Recompose", TicketID, function(self)
+	Tickets.New("Recompose", TicketID, function(self: InterfaceWorksTicket)
 		Stroke:MaxPointer(function()
 			Tickets.SetParallel()
 		end)
 		DiffJob:Finished(function()
-			Tickets.InvalidateParallel(self.ID)
 			DiffJob:Destroy()
+			if not self.ID then
+				return
+			end
+			Tickets.InvalidateParallel(self.ID)
 		end)
 		DiffJob:Run()
 	end)

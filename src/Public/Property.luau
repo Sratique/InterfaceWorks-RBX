@@ -1,4 +1,4 @@
-local types = require("@Root/types")
+local types = require("@Root/structs")
 type InterfaceWorksElement = types.InterfaceWorksElement
 
 local function AssembleProperty(ID: string, Ps: { [any]: any }): InterfaceWorksElement
@@ -6,6 +6,7 @@ local function AssembleProperty(ID: string, Ps: { [any]: any }): InterfaceWorksE
 
 		ID = ID,
 		Ps = Ps,
+		Fs = {},
 		Cn = {},
 		Type = "Property",
 	}

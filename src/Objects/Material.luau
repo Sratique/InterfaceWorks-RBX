@@ -1,25 +1,41 @@
+--!nocheck
+
 local RunService = game:GetService("RunService")
 
-local types = require("@Root/types")
-type InterfaceWorksMaterial = types.InterfaceWorksMaterial
-type InterfaceWorksObject = types.InterfaceWorksObject
-
 local BaseObject = require("@BaseObject")
-local Worker = require("@Objects/Worker")
+type InterfaceWorksBase = BaseObject.InterfaceWorksBase
+local InterfaceWorksWorker = require("@Objects/Worker")
+type InterfaceWorksWorker = InterfaceWorksWorker.InterfaceWorksWorker
+local InterfaceWorksObject = require("@Objects/Object")
+type InterfaceWorksObject = InterfaceWorksObject.InterfaceWorksObject
 
 local ProtectedObject = require("@Root/Internal/ProtectedObject")
 
 local MaterialObject = {}
 MaterialObject.__index = setmetatable(MaterialObject, BaseObject)
 
+export type InterfaceWorksMaterial =
+	BaseObject.InterfaceWorksBase
+	& typeof(setmetatable(
+		{} :: {
+
+			Targets: { InterfaceWorksObject },
+			ReactivityWorkers: { InterfaceWorksWorker },
+			ReactivityFunction: (InterfaceWorksObject) -> ...() -> (),
+			ConstantReactivityWorker: InterfaceWorksWorker,
+			Properties: { [string | "Default"]: { [string]: any } },
+		},
+		MaterialObject
+	))
+
 function MaterialObject.New(
 	DefaultProperties: { [string | "Default"]: { [string]: any } },
 	Reactivity: (InterfaceWorksObject) -> ...() -> (),
 	ConstantReactivity: (InterfaceWorksObject) -> ()?
 ): InterfaceWorksMaterial
-	local NewBaseObject = BaseObject.New()
+	local NewBaseObject: InterfaceWorksBase = BaseObject.New()
 
-	local NewMaterialObject = setmetatable(NewBaseObject, MaterialObject)
+	local NewMaterialObject = setmetatable(NewBaseObject :: InterfaceWorksMaterial, MaterialObject)
 
 	ProtectedObject.LayerInheritance(NewMaterialObject, "InterfaceWorksMaterial")
 
@@ -39,7 +55,7 @@ function MaterialObject.New(
 	return NewMaterialObject
 end
 
-function MaterialObject:AddTarget(Object: InterfaceWorksObject)
+function MaterialObject.AddTarget(self: InterfaceWorksMaterial, Object: InterfaceWorksObject)
 	if not Object.Host or not Object.Host:IsA("GuiObject") then
 		return
 	end
@@ -51,7 +67,7 @@ function MaterialObject:AddTarget(Object: InterfaceWorksObject)
 		Object.Host[name] = data
 	end
 	if self.ReactivityFunction then
-		self.ReactivityWorkers[Object.Host] = Worker.New(self.ReactivityFunction(Object))
+		self.ReactivityWorkers[Object.Host] = InterfaceWorksWorker.New(self.ReactivityFunction(Object))
 	end
 
 	table.insert(self.Targets, Object)
@@ -61,7 +77,7 @@ function MaterialObject:AddTarget(Object: InterfaceWorksObject)
 	end)
 end
 
-function MaterialObject:Destroy()
+function MaterialObject.Destroy(self: InterfaceWorksMaterial)
 	if self.ConstantReactivityWorker then
 		self.ConstantReactivityWorker:Disconnect()
 	end

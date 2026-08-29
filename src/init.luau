@@ -55,12 +55,13 @@ if _G.InterfaceWorksDebug then
 	end
 end
 
-local types = require("@Root/types")
+local types = require("@Root/structs")
 type InterfaceWorksElement = types.InterfaceWorksElement
 type InterfaceWorksElementData = types.InterfaceWorksElementData
-type InterfaceWorksMaterial = types.InterfaceWorksMaterial
 type InterfaceWorksAnimationData = types.InterfaceWorksAnimationData
 type _InterfaceWorksComposition = types._InterfaceWorksComposition
+type InterfaceWorksAnimationType = types.InterfaceWorksAnimationType
+type InterfaceWorksElementType = types.InterfaceWorksElementType
 
 local Root = require("@Objects/Root")
 local InputTypes = require("@Root/Public/InputTypesEnums")
@@ -91,21 +92,23 @@ end
 function InterfaceWorks.CreateElement(
 	Classname: string,
 	Data: InterfaceWorksElementData?,
-	Children: { InterfaceWorksElement? }?
+	Children: { [number | string]: InterfaceWorksElement? }?
 ): InterfaceWorksElement
 	Data = Data or {}
 	Children = Children or {}
+
+	local ElementType: InterfaceWorksElementType = "Object"
 
 	local Struct = {
 
 		ID = Classname,
 		Key = Data and Data.Key,
-		Ps = Data and Data.Properties,
-		Fs = Data and Data.Functions,
+		Ps = Data and Data.Properties or {},
+		Fs = Data and Data.Functions or {},
 		Mt = Data and Data.Material,
 		An = Data and Data.Animation,
-		Cn = Children,
-		Type = "Object",
+		Cn = Children or {},
+		Type = ElementType,
 	}
 
 	return Struct
@@ -113,6 +116,7 @@ end
 
 function InterfaceWorks.CreateAnimation(AnimationData: {
 	Goals: { [string]: any },
+	Type: InterfaceWorksAnimationType?,
 	BeginningPoint: { any }?,
 	BeginningPointRepeats: boolean?,
 	Duration: number,
@@ -122,10 +126,13 @@ function InterfaceWorks.CreateAnimation(AnimationData: {
 	Reverses: boolean?,
 	delayTime: number?,
 }): InterfaceWorksAnimationData
+	local DefaultAnimationType: InterfaceWorksAnimationType = "Default"
+
 	local NewAnimationData = {
 		Goals = AnimationData.Goals,
 		BeginningPoint = AnimationData.BeginningPoint,
 		BeginningPointRepeats = AnimationData.BeginningPointRepeats,
+		Type = AnimationData.Type or DefaultAnimationType,
 		TI = TweenInfo.new(
 			AnimationData.Duration,
 			AnimationData.EasingStyle or Enum.EasingStyle.Linear,
@@ -140,12 +147,16 @@ function InterfaceWorks.CreateAnimation(AnimationData: {
 end
 
 function InterfaceWorks.CreateFragment(Composition: _InterfaceWorksComposition, ...: any): InterfaceWorksElement
+	local ElementType: InterfaceWorksElementType = "Fragment"
+
 	local Struct = {
-		ID = nil,
-		Type = "Fragment",
+		ID = "",
+		Type = ElementType,
 		Composition = Composition,
 		FragmentArguments = { ... },
 		Cn = {},
+		Ps = {},
+		Fs = {},
 	}
 
 	return Struct
