@@ -23,14 +23,13 @@ export type InterfaceWorksMouse =
 		{} :: {
 			Host: DockWidgetPluginGui,
 			Root: Frame,
-		},
-		{} :: {
 
 			Destroy: (self: InterfaceWorksMouse) -> (),
 			GetLocation: (self: InterfaceWorksMouse) -> Vector2,
 			Focused: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
 			FocusLost: (self: InterfaceWorksMouse, callback: () -> ()) -> RBXScriptConnection | InterfaceWorksWorker,
-		}
+		},
+		{}
 	))
 
 function MouseShared.New(Root: Frame): InterfaceWorksMouse
