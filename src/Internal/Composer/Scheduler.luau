@@ -33,6 +33,7 @@ type InterfaceWorksRecomposingTicket = {
 	Stroke: InterfaceWorksStroke,
 	Arguments: { any }?,
 	ID: string?,
+	IsNew: boolean?,
 }
 
 export type InterfaceWorksRecomposingSchedule = { InterfaceWorksRecomposingTicket }
@@ -459,6 +460,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 						table.insert(Strokes, {
 							Stroke = NewStroke,
 							Arguments = NewElement.FragmentArguments,
+							IsNew = true,
 						})
 					end
 				end
@@ -479,6 +481,9 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 			--Wrap things up for this stroke.
 			Stroke.CurrentComposition = NewBuild
 			ComposerScheduler.CurrentComposition = nil
+			if Ticket.IsNew then
+				Ticket.Stroke:__Init()
+			end
 		end
 	end)
 end

@@ -113,6 +113,9 @@ function ComposerTickets.InvalidateParallel(TicketID: string)
 	local Ticket = TicketsData.Parallel[TicketID]
 
 	if not Ticket then
+		if TicketsData.CurrentTicket and TicketsData.CurrentTicket.ID == TicketID then
+			ComposerTickets.Invalidate()
+		end
 		return
 	end
 
