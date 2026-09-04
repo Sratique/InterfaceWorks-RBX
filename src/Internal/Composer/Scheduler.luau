@@ -408,6 +408,7 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 								NewChildren[NewChildrenIndex] = NewElement.Cn
 								OldChildren[NewChildrenIndex] = OldElement.Cn
 								Hierarchy[NewChildrenIndex] = Parent[NewName]
+								break
 							end
 
 							if NewElement.Type == "Fragment" then
