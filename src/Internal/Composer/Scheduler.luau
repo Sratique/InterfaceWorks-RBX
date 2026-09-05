@@ -423,9 +423,6 @@ function ComposerScheduler.ReCompose(Init: InterfaceWorksStroke)
 										if OldElement.FragmentArguments[dt] ~= val then
 											table.insert(Strokes, RecomposingTicket)
 											break
-										elseif typeof(val) == "table" then
-											table.insert(Strokes, RecomposingTicket)
-											break
 										end
 									end
 								else
