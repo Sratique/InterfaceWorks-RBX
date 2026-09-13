@@ -13,15 +13,13 @@ function Event.New(Event: () -> (() -> ())?, ...: InterfaceWorksValue): Interfac
 		return Exists
 	end
 
+	local OnChangeValues: { InterfaceWorksValue } = { ... }
+
 	local NewEvent = InterfaceWorksWorker.New(Event() or function()
 		if _G.SENSITIVE then
 			warn("Missing cleanup function in Event!")
 		end
 	end)
-
-	Composer.Event.IndexEvent(NewEvent)
-
-	local OnChangeValues: { InterfaceWorksValue } = { ... }
 
 	for i = 1, #OnChangeValues, 1 do
 		local v = OnChangeValues[i]
@@ -29,6 +27,10 @@ function Event.New(Event: () -> (() -> ())?, ...: InterfaceWorksValue): Interfac
 			NewEvent:Update()
 		end)
 	end
+
+	NewEvent.Reference = Event
+
+	Composer.Event.IndexEvent(NewEvent)
 
 	return NewEvent
 end

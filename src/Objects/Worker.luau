@@ -11,56 +11,51 @@ export type InterfaceWorksWorker =
 	& typeof(setmetatable(
 		{} :: {
 
-			SelfProcesses: { () -> () },
-			Reference: { (...any) -> ...any },
+			SelfProcess: () -> ()?,
+			Reference: (() -> (() -> ())?)?,
 		},
 		Worker
 	))
 
-function Worker.New(...: (...any) -> ...any): InterfaceWorksWorker
+function Worker.New(Cleanup: (...any) -> ...any): InterfaceWorksWorker
 	local NewBaseObject = BaseObject.New()
 
 	local NewWorker: InterfaceWorksWorker = setmetatable(NewBaseObject :: InterfaceWorksWorker, Worker)
 
 	ProtectedObject.LayerInheritance(NewWorker, "InterfaceWorksWorker")
 
-	NewWorker.SelfProcesses = {}
-	NewWorker.Reference = { ... }
-
-	for i, v in { ... } do
-		NewWorker.SelfProcesses[i] = v
-	end
+	NewWorker.SelfProcess = Cleanup
 
 	return NewWorker
 end
 
-function Worker.__Clear(self: InterfaceWorksWorker)
-	for _, v: () -> () in pairs(self.SelfProcesses) do
-		v()
+function Worker.__Clear(self: InterfaceWorksWorker, Final: boolean?)
+	if self.SelfProcess then
+		self.SelfProcess()
+	end
+
+	if Final then
+		self.Reference = nil
 	end
 end
 
 function Worker.Update(self: InterfaceWorksWorker)
 	self:__Clear()
 
-	for i, v in self.Reference do
-		self.SelfProcesses[i] = v
+	if not self.Reference then
+		return
 	end
+
+	self.SelfProcess = self.Reference()
 end
 
 function Worker.Destroy(self: InterfaceWorksWorker)
-	self:__Clear()
-
-	table.clear(self.Reference)
-
+	self:__Clear(true)
 	self:__Destroy()
 end
 
 function Worker.Disconnect(self: InterfaceWorksWorker)
-	self:__Clear()
-
-	table.clear(self.Reference)
-
+	self:__Clear(true)
 	self:__Destroy()
 end
 
