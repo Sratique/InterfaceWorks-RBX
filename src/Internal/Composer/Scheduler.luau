@@ -87,7 +87,7 @@ end
     Updates the object according to changes in Elements.
 
 ]]
-local function PushObject(Object: InterfaceWorksBase, New: InterfaceWorksElement, Old: InterfaceWorksElement)
+local function PushObject(Object: InterfaceWorksObject, New: InterfaceWorksElement, Old: InterfaceWorksElement)
 	local Host: Instance = Object.Host :: Instance
 
 	for prop, val in New.Ps do
@@ -97,7 +97,12 @@ local function PushObject(Object: InterfaceWorksBase, New: InterfaceWorksElement
 	end
 
 	if New.Fs and New.Fs[InputTypesEnums.Render] then
-		InputTypes[InputTypesEnums.Render](Object, New.Fs[InputTypesEnums.Render])
+		Object.Workers[InputTypesEnums.Render]:Disconnect()
+
+		task.defer(function()
+			Object.Workers[InputTypesEnums.Render] =
+				InputTypes[InputTypesEnums.Render](Object, New.Fs[InputTypesEnums.Render])
+		end)
 	end
 
 	if New.An then
@@ -128,19 +133,21 @@ local function CreateObject(
 	local NewElementObject: InterfaceWorksObject = InterfaceWorksObject.New(Host)
 	SourceObject:Insert(NewElementObject, ElementName)
 
-	for fndata: string | number, fn: (any) -> any in Element.Fs do
-		if InputTypes[fndata] then
-			local Worker: any = InputTypes[fndata](NewElementObject, fn)
+	task.defer(function()
+		for fndata: any, fn: (any) -> any in Element.Fs do
+			if InputTypes[fndata] then
+				local Worker: any = InputTypes[fndata](NewElementObject, fn)
 
-			if Worker then
-				table.insert(NewElementObject.Workers, Worker)
+				if Worker then
+					NewElementObject.Workers[fndata] = Worker
+				end
+				continue
 			end
-			continue
+			NewElementObject[fndata] = function(): any
+				return fn(NewElementObject)
+			end
 		end
-		NewElementObject[fndata] = function(): any
-			return fn(NewElementObject)
-		end
-	end
+	end)
 
 	if Element.Mt then
 		Element.Mt:AddTarget(NewElementObject)

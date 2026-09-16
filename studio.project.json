@@ -7,7 +7,7 @@
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "InterfaceWorks": {
-        "$path": "DarkluaOutput"
+        "$path": "InterfaceWorks"
       }
     }
   }
